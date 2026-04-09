@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+:root {
+  --background: #020202; /* abyss */
+  --foreground: #e0e0e0;
+  
+  --neon-cyan: #00f3ff;
+  --neon-violet: #7000ff;
+  --neon-pink: #ff00ff;
+  
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(0, 243, 255, 0.15);
+}
+
+@theme {
+  --color-abyss: var(--background);
+  --color-neon-cyan: var(--neon-cyan);
+  --color-neon-violet: var(--neon-violet);
+  --color-neon-pink: var(--neon-pink);
+  
+  --font-orbitron: var(--font-orbitron), sans-serif;
+  --font-inter: var(--font-inter), sans-serif;
+}
+
+@utility glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@utility neon-text-cyan {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(0, 243, 255, 0.4), 0 0 20px rgba(0, 243, 255, 0.2);
+}
+
+@utility neon-border-cyan {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.1);
+}
+
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #000;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--neon-violet);
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--neon-cyan);
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background-color: var(--neon-violet);
+  color: white;
+}

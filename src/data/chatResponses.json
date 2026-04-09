@@ -1,0 +1,65 @@
+{
+  "responses": [
+    {
+      "keywords": ["bio", "who", "about", "sumit"],
+      "response": "I am Sumit Bansiya, an AI Researcher and M.Tech Scholar specializing in Computer Vision and Generative AI. I focus on developing high-fidelity medical imaging models and optimizing deep learning pipelines."
+    },
+    {
+      "keywords": ["contact", "email", "hire", "linkedin"],
+      "response": "Initialize handshake sequence... Transmit data packets to: bansiyasumit09@gmail.com, or sync with my node at https://www.linkedin.com/in/sumit-bansiya-patidar-305869213/."
+    },
+    {
+      "keywords": ["skills", "stack", "tech"],
+      "response": "My core stack: Python, PyTorch, TensorFlow. I specialize in CNNs (ResNet), GANs (Pix2Pix), LLMs, RAG Pipelines, and deploying via FastAPI/Streamlit. Try asking about my 'projects'!"
+    },
+    {
+      "keywords": ["projects", "experience", "work"],
+      "response": "My core projects: 1. Medical GAN Research (synthesizing DES phantoms). 2. Car Damage Assessment (ResNet + Optuna). 3. Explainable Multi-View Breast Cancer Diagnosis. 4. Prompt Engineering for LLMs."
+    },
+    {
+      "keywords": ["research", "gan", "medical", "cancer", "mammography"],
+      "response": "Ah, the Medical Suite. I synthesized Dual-Energy Subtracted (DES) phantoms from low-energy mammograms using Pix2Pix GANs and built an explainable Breast Cancer Diagnosis system using 8-view CESM data with Grad-CAM."
+    },
+    {
+      "keywords": ["engineering", "car", "damage"],
+      "response": "The Engineering Forge showcases my end-to-end Car Damage Assessment pipeline using a custom dataset of 2,300 images. I utilized ResNet + Optuna, bridging accuracy from 57% to 80%."
+    },
+    {
+      "keywords": ["teach", "mentor", "academy", "freelance"],
+      "response": "I function as an AI Educator and Freelance Instructor. I emphasize learning-by-doing, blending theory and practical implementation for UG students, faculty, and school projects."
+    },
+    {
+      "keywords": ["family", "father", "mother", "brother", "sister", "parents"],
+      "response": "[LORE DATA] I come from a close-knit family. My father (Ghanshyam) and brother/bhabhi (Damodar & Radha) are government teachers. My mother (Krishna) is a devoted homemaker. I also have two sisters: Nivedita (CA) and Akshita (B.Sc), plus two amazing cousins, Tushar and Yash, who are like brothers to me."
+    },
+    {
+      "keywords": ["friends", "dheer", "satyam", "samar", "satvik"],
+      "response": "[LORE DATA] Through the toughest phases of my college journey, Dheer, Satvik, Satyam, Samar, Harshit, Vatsal, and Pranav became my pillars of strength. Their unconditional support helped me recover and rediscover my passion for AI."
+    },
+    {
+      "keywords": ["journey", "health", "village", "struggle", "covid", "origin"],
+      "response": "[LORE DATA] My path wasn't linear. I hail from a village in MP. During my transition from Delhi University to MITS Gwalior (B.Tech AI), I battled severe respiratory issues and depression during COVID-19. But leveraging that time, I rebuilt myself into who I am today—an AI enthusiast."
+    },
+    {
+      "keywords": ["hobbies", "sports", "cricket", "football", "music"],
+      "response": "Outside of AI tensors, I represent my team as a national-level football player! I also enjoy cricket, badminton, and exploring various genres of music."
+    },
+    {
+      "keywords": ["/bio"],
+      "response": "[TERMINAL COMMAND] Name: Sumit Bansiya. Location: Agar Malwa, MP. Current: M.Tech in AI @ NIT Jalandhar. B.Tech @ MITS Gwalior (8.7 CGPA). Interest: Medical Imaging & Generative AI."
+    },
+    {
+      "keywords": ["/credits"],
+      "response": "[SYSTEM] Built 2026. Tech Stack: Next.js 15, Framer Motion, Tailwind V4, FlexSearch. Theme: Cyberpunk Neon Node Interface."
+    },
+    {
+      "keywords": ["/books", "books", "library", "certifications", "nptel"],
+      "response": "[ARCHIVE] I hold an Udacity 'Generative AI with AWS' cert, 5 NPTEL certifications including NLP and Advanced Graph Theory, plus AWS/Python diplomas. Check the Digital Library node!"
+    },
+    {
+      "keywords": ["/lore", "lore"],
+      "response": "[DECRYPTING LORE...] A village boy from Madhya Pradesh who faced chronic health and respiratory struggles during COVID-19, halting his UPSC dreams. Supported by his tight-knit family and a brilliant circle of friends (Dheer, Satvik, etc.), he experienced a 'Rebirth' into the realm of Generative AI. Now pursuing M.Tech at NIT Jalandhar. He codes by day, plays national-level football by night."
+    }
+  ],
+  "default": "Command unrecognizable. Try asking about my 'projects', 'skills', 'family', 'journey', or enter '/lore' for my origin story."
+}

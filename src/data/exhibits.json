@@ -1,0 +1,65 @@
+{
+  "exhibits": [
+    {
+      "id": "research-01",
+      "title": "Medical GAN Research",
+      "institution": "NIT Jalandhar",
+      "description": "Synthesizing Dual-Energy Subtracted (DES) phantoms from low-energy mammograms using Pix2Pix GANs. Also developed an explainable multi-view Breast Cancer Diagnosis system via 8 CESM views + Grad-CAM.",
+      "metrics": {
+        "PSNR": "High",
+        "SSIM": "Validated",
+        "LPIPS": "Optimized"
+      },
+      "tags": [
+        "PyTorch",
+        "GANs",
+        "Medical Imaging",
+        "Grad-CAM"
+      ]
+    },
+    {
+      "id": "engineering-01",
+      "title": "Car Damage Assessment",
+      "description": "Engineered an end-to-end damage classification system using a custom dataset of 2,300 vehicle images. Optimized model performance from 57% to 80% accuracy by transitioning from EfficientNet-B0 to a ResNet backbone.",
+      "tech_stack": [
+        "FastAPI",
+        "Streamlit",
+        "Optuna"
+      ],
+      "deployment": "Real-time Inference",
+      "tags": [
+        "ResNet",
+        "EfficientNet",
+        "Computer Vision"
+      ]
+    },
+    {
+      "id": "teaching-01",
+      "title": "AI & ML Academic Profile",
+      "role": "Freelance Instructor & Researcher",
+      "philosophy": "Effective teaching must bridge theory and practice. Emphasizing hands-on implementation and real-world datasets.",
+      "impact": "Mentored students for internships, conducted workshops in government schools for non-technical students.",
+      "tags": [
+        "Mentoring",
+        "Teaching",
+        "Social AI Guidelines"
+      ]
+    },
+    {
+      "id": "engineering-02",
+      "title": "RAG-Based AI Agent Architect",
+      "description": "Built a Conversational AI chatbot utilizing Python, Gemini API, and Gradio. Engineered multi-step prompt reasoning pipelines via rigorous RLHF evaluations at Outlier AI.",
+      "tech_stack": [
+        "Gemini API",
+        "Gradio",
+        "Hugging Face"
+      ],
+      "deployment": "Hugging Face Spaces",
+      "tags": [
+        "LLMs",
+        "RAG",
+        "Prompt Engineering"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "library": [
+    {
+      "title": "Advanced Graph Theory",
+      "issuer": "NPTEL (Elite + Silver)",
+      "year": 2023,
+      "type": "Certification"
+    },
+    {
+      "title": "Google Cloud Computing Foundations",
+      "issuer": "NPTEL (Elite)",
+      "year": 2023,
+      "type": "Certification"
+    },
+    {
+      "title": "Natural Hazards",
+      "issuer": "NPTEL (Elite)",
+      "year": 2024,
+      "type": "Certification"
+    },
+    {
+      "title": "Natural Language Processing",
+      "issuer": "NPTEL",
+      "year": 2024,
+      "type": "Certification"
+    },
+    {
+      "title": "Social Network Analysis",
+      "issuer": "NPTEL",
+      "year": 2023,
+      "type": "Certification"
+    },
+    {
+      "title": "Generative AI with AWS",
+      "issuer": "Udacity",
+      "year": 2024,
+      "type": "Certification"
+    },
+    {
+      "title": "Python for Data Science and Machine Learning",
+      "issuer": "Udemy",
+      "year": 2024,
+      "type": "Certification"
+    }
+  ]
+}
