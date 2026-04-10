@@ -2,13 +2,13 @@
   "exhibits": [
     {
       "id": "research-01",
-      "title": "Medical GAN Research",
+      "title": "Generative AI for Medical Imaging & Breast Cancer Diagnosis",
       "institution": "NIT Jalandhar",
-      "description": "Synthesizing Dual-Energy Subtracted (DES) phantoms from low-energy mammograms using Pix2Pix GANs. Also developed an explainable multi-view Breast Cancer Diagnosis system via 8 CESM views + Grad-CAM.",
+      "description": "Designed a Pix2Pix GAN architecture to synthesize Dual-Energy Subtracted (DES) phantoms from low-energy mammograms, facilitating radiation-free screening research. Built a multi-view deep learning framework utilizing 8 CESM views for granular Normal/Benign/Malignant classification, integrating Grad-CAM for visual explainability.",
       "metrics": {
-        "PSNR": "High",
-        "SSIM": "Validated",
-        "LPIPS": "Optimized"
+        "Fidelity": "High (PSNR, SSIM, LPIPS)",
+        "Classification": "Multi-View (8 CESM)",
+        "Explainability": "Grad-CAM"
       },
       "tags": [
         "PyTorch",
@@ -19,8 +19,8 @@
     },
     {
       "id": "engineering-01",
-      "title": "Car Damage Assessment",
-      "description": "Engineered an end-to-end damage classification system using a custom dataset of 2,300 vehicle images. Optimized model performance from 57% to 80% accuracy by transitioning from EfficientNet-B0 to a ResNet backbone.",
+      "title": "Car Damage Assessment System",
+      "description": "Developed an end-to-end damage classification system using a custom dataset of 2,300 vehicle images. Optimized model performance from 57% to 80% accuracy by transitioning from EfficientNet-B0 to a ResNet backbone and implemented automated hyperparameter tuning using Optuna.",
       "tech_stack": [
         "FastAPI",
         "Streamlit",
@@ -37,21 +37,21 @@
       "id": "teaching-01",
       "title": "AI & ML Academic Profile",
       "role": "Freelance Instructor & Researcher",
-      "philosophy": "Effective teaching must bridge theory and practice. Emphasizing hands-on implementation and real-world datasets.",
-      "impact": "Mentored students for internships, conducted workshops in government schools for non-technical students.",
+      "philosophy": "Delivered intensive training in offline settings for undergraduate students, covering Python, ML, DL, and CNNs. Emphasized hands-on coding, practical datasets, and industry workflows.",
+      "impact": "Mentored students for internships, academic projects, and career guidance. Conducted awareness sessions in government schools for non-technical students.",
       "tags": [
         "Mentoring",
         "Teaching",
-        "Social AI Guidelines"
+        "Hands-On Learning"
       ]
     },
     {
       "id": "engineering-02",
-      "title": "RAG-Based AI Agent Architect",
-      "description": "Built a Conversational AI chatbot utilizing Python, Gemini API, and Gradio. Engineered multi-step prompt reasoning pipelines via rigorous RLHF evaluations at Outlier AI.",
+      "title": "RAG-Based AI Knowledge Assistant",
+      "description": "Built a Retrieval-Augmented Generation (RAG) system using the Gemini API to provide context-aware answers from private documents. Implemented vector search for semantic retrieval and deployed the application on Hugging Face Spaces.",
       "tech_stack": [
         "Gemini API",
-        "Gradio",
+        "Vector Search",
         "Hugging Face"
       ],
       "deployment": "Hugging Face Spaces",

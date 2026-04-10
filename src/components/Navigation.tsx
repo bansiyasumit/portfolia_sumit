@@ -71,7 +71,7 @@ export const Navigation = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass-panel absolute w-full top-full left-0 border-b border-[#00f3ff]/20"
+            className="md:hidden bg-[#020202]/95 backdrop-blur-md absolute w-full top-full left-0 border-b border-[#00f3ff]/20"
           >
             <div className="flex flex-col p-6 gap-6">
               {navLinks.map((link) => (

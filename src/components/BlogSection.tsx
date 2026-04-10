@@ -21,13 +21,17 @@ export const BlogSection = () => {
       try {
         const query = `
           query Publication {
-            user(username: "bansiya") {
-              publication {
-                posts(page: 1) {
-                  title
-                  brief
-                  slug
-                  coverImage
+            publication(host: "bansiya-blog.hashnode.dev") {
+              posts(first: 3) {
+                edges {
+                  node {
+                    title
+                    brief
+                    slug
+                    coverImage {
+                      url
+                    }
+                  }
                 }
               }
             }
@@ -43,8 +47,9 @@ export const BlogSection = () => {
         });
 
         const result = await response.json();
-        const fetchedPosts = result.data?.user?.publication?.posts || [];
-        setPosts(fetchedPosts.slice(0, 3));
+        const edges = result.data?.publication?.posts?.edges || [];
+        const fetchedPosts = edges.map((edge: any) => edge.node);
+        setPosts(fetchedPosts);
       } catch (error) {
         console.error("Failed to fetch Hashnode posts:", error);
       } finally {
@@ -79,8 +84,8 @@ export const BlogSection = () => {
         ) : posts.length > 0 ? (
           posts.map((post, index) => (
             <motion.a
-              key={post.slug}
-              href={`https://bansiya.hashnode.dev/${post.slug}`}
+               key={post.slug}
+              href={`https://bansiya-blog.hashnode.dev/${post.slug}`}
               target="_blank"
               rel="noreferrer"
               initial={{ opacity: 0, y: 20 }}

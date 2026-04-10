@@ -21,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
+        suppressHydrationWarning
         className={`${inter.variable} ${orbitron.variable} antialiased bg-[#020202] text-white custom-scrollbar`}
       >
         <NeonCursor />

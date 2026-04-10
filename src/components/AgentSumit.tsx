@@ -68,7 +68,7 @@ export const AgentSumit = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 glass-panel rounded-lg shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 bg-[#020202]/95 border border-[#00f3ff]/30 backdrop-blur-md rounded-lg shadow-2xl flex flex-col overflow-hidden"
             style={{ maxHeight: '80vh', height: '500px' }}
           >
             {/* Header */}
