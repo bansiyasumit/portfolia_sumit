@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, X, Send, Cpu } from "lucide-react";
-import chatData from "../data/chatResponses.json";
 
 export const AgentSumit = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,28 +20,39 @@ export const AgentSumit = () => {
     scrollToBottom();
   }, [messages, isOpen]);
 
-  const handleSend = (e?: React.FormEvent) => {
+  const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim()) return;
 
     const userMessage = input.trim();
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    const newMessages = [...messages, { role: "user", content: userMessage }];
+    setMessages(newMessages);
     setInput("");
 
-    // Simple keyword matching for static RAG approach
-    setTimeout(() => {
-      let agentResponse = chatData.default;
-      const lowerInput = userMessage.toLowerCase();
+    // Temporary loading state
+    setMessages(prev => [...prev, { role: "agent", content: "Accessing neural link...", isLoading: true } as any]);
 
-      for (const item of chatData.responses) {
-        if (item.keywords.some(kw => lowerInput.includes(kw))) {
-          agentResponse = item.response;
-          break;
-        }
-      }
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // Passing the full array ensures the AI remembers conversation history!
+        body: JSON.stringify({ messages: newMessages.map(m => ({ role: m.role, content: m.content })) })
+      });
 
-      setMessages(prev => [...prev, { role: "agent", content: agentResponse }]);
-    }, 600); // Simulate processing delay
+      const data = await response.json();
+
+      setMessages(prev => {
+        // Remove loading state and append real response
+        const withoutLoading = prev.filter((m: any) => !m.isLoading);
+        return [...withoutLoading, { role: "agent", content: data.reply || data.error }];
+      });
+    } catch (err) {
+      setMessages(prev => {
+        const withoutLoading = prev.filter((m: any) => !m.isLoading);
+        return [...withoutLoading, { role: "agent", content: "Error: Connection lost to Groq Mainframe." }];
+      });
+    }
   };
 
   return (
