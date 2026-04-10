@@ -93,11 +93,18 @@ export default function Home() {
       
       {/* Footer */}
       <footer className="border-t border-white/5 py-10 mt-20 bg-black/50">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="font-orbitron text-gray-500 text-xs tracking-[0.2em] uppercase">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col items-center text-center">
+          <p className="font-orbitron text-gray-500 text-xs tracking-[0.2em] uppercase mb-6">
             // END OF EXHIBITION
           </p>
-          <p className="font-inter text-gray-600 text-xs mt-4">
+          
+          <div className="flex gap-6 mb-8 mt-2">
+            <a href="mailto:bansiyasumit09@gmail.com" className="font-orbitron text-sm text-gray-400 hover:text-[#00f3ff] transition-colors border border-white/10 hover:border-[#00f3ff]/50 px-4 py-2 rounded-sm backdrop-blur-sm">
+              Initialize Transmission: bansiyasumit09@gmail.com
+            </a>
+          </div>
+
+          <p className="font-inter text-gray-600 text-xs">
             Built by Sumit Bansiya © 2026. Cyberpunk Framework.
           </p>
         </div>
