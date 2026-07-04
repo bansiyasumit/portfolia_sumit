@@ -6,8 +6,22 @@ import { GanSlider } from "./GanSlider";
 import { ProjectVisual, ProjectVisualVariant } from "./ProjectVisual";
 import { Reveal } from "./Reveal";
 
+interface Exhibit {
+  id: string;
+  weight: string;
+  visual: string;
+  title: string;
+  institution?: string;
+  description: string;
+  metrics?: Record<string, string>;
+  tags?: string[];
+  tech_stack?: string[];
+  deployment?: string;
+  role?: string;
+}
+
 export const ProjectsSection = () => {
-  const exhibits = exhibitsData.exhibits;
+  const exhibits = exhibitsData.exhibits as unknown as Exhibit[];
   const hero = exhibits.find((e) => e.weight === "hero");
   const rest = exhibits.filter((e) => e.weight !== "hero");
 
