@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { ReactElement } from "react";
 
 export type ProjectVisualVariant = "classifier" | "rag" | "agents" | "vision";
 type Variant = ProjectVisualVariant;
@@ -194,7 +195,7 @@ const VisionDiagram = () => {
   );
 };
 
-const DIAGRAMS: Record<Variant, () => JSX.Element> = {
+const DIAGRAMS: Record<Variant, () => ReactElement> = {
   classifier: ClassifierDiagram,
   rag: RagDiagram,
   agents: AgentsDiagram,
