@@ -17,10 +17,11 @@ export const Navigation = () => {
   }, []);
 
   const navLinks = [
-    { name: "Terminal", href: "#" },
-    { name: "Research Vault", href: "#research" },
-    { name: "Engineering", href: "#engineering" },
-    { name: "Academy", href: "#academy" },
+    { name: "Home", href: "#home" },
+    { name: "About", href: "#about" },
+    { name: "Projects", href: "#projects" },
+    { name: "Agent", href: "#agent" },
+    { name: "Contact", href: "#contact" },
   ];
 
   return (

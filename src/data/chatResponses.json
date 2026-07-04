@@ -10,19 +10,27 @@
     },
     {
       "keywords": ["skills", "stack", "tech"],
-      "response": "My core stack: Python, PyTorch, TensorFlow. I specialize in CNNs (ResNet), GANs (Pix2Pix), LLMs, RAG Pipelines, and deploying via FastAPI/Streamlit. Try asking about my 'projects'!"
+      "response": "My core stack: Python, PyTorch, TensorFlow. I specialize in CNNs (ResNet), GANs (Pix2Pix/CycleGAN), LLMs, RAG pipelines, agentic systems (CrewAI/LangChain), and deploying via FastAPI/Streamlit/Redis. Try asking about my 'projects'!"
     },
     {
       "keywords": ["projects", "experience", "work"],
-      "response": "My core projects: 1. Medical GAN Research (synthesizing DES phantoms). 2. Car Damage Assessment (ResNet + Optuna). 3. Explainable Multi-View Breast Cancer Diagnosis. 4. Prompt Engineering for LLMs."
+      "response": "My core projects: 1. Seg-CycleGAN thesis (synthesizing DES mammograms). 2. Explainable Multi-View Breast Cancer Diagnosis. 3. Multi-Stage Legal RAG Pipeline. 4. Agentic AI Report Automation (CrewAI). 5. Car Damage Assessment (ResNet + Optuna)."
     },
     {
-      "keywords": ["research", "gan", "medical", "cancer", "mammography"],
-      "response": "Ah, the Medical Suite. I synthesized Dual-Energy Subtracted (DES) phantoms from low-energy mammograms using Pix2Pix GANs and built an explainable Breast Cancer Diagnosis system using 8-view CESM data with Grad-CAM."
+      "keywords": ["research", "gan", "medical", "cancer", "mammography", "thesis", "cyclegan", "seg-cyclegan"],
+      "response": "That's my thesis work at NIT Jalandhar. I started by synthesizing Dual-Energy Subtracted (DES) phantoms from low-energy mammograms with a Pix2Pix GAN, and I'm now evolving that into a Seg-CycleGAN — segmentation-guided attention plus cycle-consistency losses — for higher-fidelity lesion reconstruction. I also built an explainable Breast Cancer Diagnosis system using 8-view CESM data with Grad-CAM."
     },
     {
       "keywords": ["engineering", "car", "damage"],
-      "response": "The Engineering Forge showcases my end-to-end Car Damage Assessment pipeline using a custom dataset of 2,300 images. I utilized ResNet + Optuna, bridging accuracy from 57% to 80%."
+      "response": "The Car Damage Assessment pipeline runs end-to-end on a custom dataset of 2,300 images. I used ResNet + Optuna tuning, bridging accuracy from 57% to 80%, then deployed it via FastAPI + Streamlit."
+    },
+    {
+      "keywords": ["rag", "legal", "retrieval", "faiss", "bm25"],
+      "response": "My Legal Document QA system uses hybrid retrieval (BM25 + FAISS), LLM-based query rewriting, and cross-encoder reranking (MiniLM). Redis caching took latency from 4.2s down to 0.9s on repeated queries."
+    },
+    {
+      "keywords": ["agent", "agentic", "crewai", "langchain", "automation"],
+      "response": "I designed a multi-agent system with CrewAI — research, analysis, fact-checking, and report-generation agents working together, backed by real-time search and LangChain reasoning. It generates 12+ page reports in minutes, cutting manual effort by over 70%."
     },
     {
       "keywords": ["teach", "mentor", "academy", "freelance"],
@@ -50,7 +58,7 @@
     },
     {
       "keywords": ["/credits"],
-      "response": "[SYSTEM] Built 2026. Tech Stack: Next.js 15, Framer Motion, Tailwind V4, FlexSearch. Theme: Cyberpunk Neon Node Interface."
+      "response": "[SYSTEM] Built 2026. Tech Stack: Next.js 16, React 19, Framer Motion, Tailwind V4, FlexSearch. Theme: Cyberpunk Neon Node Interface."
     },
     {
       "keywords": ["/books", "books", "library", "certifications", "nptel"],

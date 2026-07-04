@@ -7,6 +7,55 @@
       "email": "bansiyasumit09@gmail.com",
       "linkedin": "https://www.linkedin.com/in/sumit-bansiya-patidar-305869213/"
     },
-    "bio": "AI Researcher, M.Tech Scholar, and Educator specializing in Computer Vision, Generative AI, and Medical Imaging. Passionate about developing high-fidelity models (GANs), optimizing deep learning pipelines, and delivering hands-on AI education to build socially impactful healthcare solutions."
+    "bio": "AI Researcher, M.Tech Scholar, and Educator specializing in Computer Vision, Generative AI, and Medical Imaging. Passionate about developing high-fidelity models (GANs), optimizing deep learning pipelines, and delivering hands-on AI education to build socially impactful healthcare solutions.",
+    "resumeUrl": "/resume.pdf"
+  },
+  "achievements": [
+    {
+      "title": "IndiaAI Fellow",
+      "org": "MeitY, Government of India",
+      "description": "Selected for the prestigious IndiaAI Fellowship under the IndiaAI Mission, Ministry of Electronics and Information Technology (MeitY), Government of India, in recognition of AI research excellence."
+    }
+  ],
+  "about": {
+    "summary": "I'm an AI Researcher and M.Tech scholar working at the intersection of computer vision and generative modeling, currently focused on making breast-cancer screening safer through synthetic medical imaging. Outside research, I build production-grade LLM systems — RAG pipelines, agentic workflows, and inference services — and spend a good chunk of my time teaching the next batch of ML engineers.",
+    "skills": {
+      "Languages": ["Python", "Object-Oriented Programming"],
+      "Machine Learning": ["Feature Engineering", "Statistical Analysis", "Hyperparameter Tuning (Optuna)", "Model Evaluation"],
+      "Deep Learning": ["CNNs (ResNet, EfficientNet)", "GANs (Pix2Pix, CycleGAN)", "Transformers", "Transfer Learning"],
+      "Generative AI": ["LLMs", "RAG Pipelines", "Prompt Engineering", "Vector Embeddings", "Stable Diffusion"],
+      "Frameworks & Libraries": ["PyTorch", "TensorFlow", "OpenCV", "Scikit-learn", "Hugging Face"],
+      "Tools & Deployment": ["Git", "FastAPI", "Streamlit", "Google Colab", "Jupyter", "Redis"]
+    },
+    "education": [
+      {
+        "degree": "M.Tech in Artificial Intelligence",
+        "institution": "NIT Jalandhar",
+        "period": "2025 – Present",
+        "detail": "CGPA: 8.43 — Focus: Medical Imaging, Deep Learning Research"
+      },
+      {
+        "degree": "B.Tech in IT (Artificial Intelligence)",
+        "institution": "MITS Gwalior",
+        "period": "2020 – 2024",
+        "detail": "CGPA: 8.7"
+      }
+    ],
+    "experience": [
+      {
+        "role": "AI Prompt Engineer (Freelance)",
+        "org": "Outlier AI",
+        "period": "Oct 2024 – Present",
+        "description": "Optimizing prompt strategies for LLMs to enhance reasoning in complex analytical and coding tasks.",
+        "impact": "Conducting RLHF evaluations for factual accuracy and safety; refined mathematical reasoning chains for higher-fidelity multi-step problem solving."
+      },
+      {
+        "role": "Freelance Instructor & Mentor",
+        "org": "AI & ML Academy",
+        "period": "2023 – 2024",
+        "description": "Delivered intensive offline training in Python, ML, DL, and CNNs, emphasizing hands-on coding and industry workflows.",
+        "impact": "Mentored students for internships and academic projects; ran AI awareness sessions in government schools for non-technical students."
+      }
+    ]
   }
 }

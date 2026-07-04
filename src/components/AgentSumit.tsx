@@ -3,9 +3,18 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, X, Send, Cpu } from "lucide-react";
+import { OPEN_AGENT_EVENT } from "./AgentSection";
 
 export const AgentSumit = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Allow any in-page CTA (e.g. the "Talk to Agent Sumit" section) to open
+  // this same floating widget instead of duplicating chat logic elsewhere.
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener(OPEN_AGENT_EVENT, handleOpen);
+    return () => window.removeEventListener(OPEN_AGENT_EVENT, handleOpen);
+  }, []);
   const [messages, setMessages] = useState([
     { role: "agent", content: "Systems online. AGENT_SUMIT initialized. Awaiting input or terminal command..." }
   ]);

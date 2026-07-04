@@ -1,65 +1,75 @@
 {
   "exhibits": [
     {
-      "id": "research-01",
-      "title": "Generative AI for Medical Imaging & Breast Cancer Diagnosis",
-      "institution": "NIT Jalandhar",
-      "description": "Designed a Pix2Pix GAN architecture to synthesize Dual-Energy Subtracted (DES) phantoms from low-energy mammograms, facilitating radiation-free screening research. Built a multi-view deep learning framework utilizing 8 CESM views for granular Normal/Benign/Malignant classification, integrating Grad-CAM for visual explainability.",
+      "id": "thesis-gan",
+      "weight": "hero",
+      "visual": "gan-slider",
+      "title": "Seg-CycleGAN: Synthesizing DES Mammograms from Low-Energy Scans",
+      "institution": "M.Tech Thesis — NIT Jalandhar",
+      "description": "Began with a Pix2Pix GAN to synthesize Dual-Energy Subtracted (DES) phantoms from low-energy mammograms, enabling radiation-free screening research. The pipeline is now evolving into a Seg-CycleGAN formulation — pairing segmentation-guided attention with cycle-consistency losses — to push high-resolution lesion reconstruction and artifact removal beyond what paired Pix2Pix training could reach.",
       "metrics": {
-        "Fidelity": "High (PSNR, SSIM, LPIPS)",
-        "Classification": "Multi-View (8 CESM)",
+        "Fidelity": "PSNR / SSIM / LPIPS",
+        "Validation": "ROI-based statistics",
+        "Status": "Optimizing high-res reconstruction"
+      },
+      "tags": ["PyTorch", "Pix2Pix", "Seg-CycleGAN", "Medical Imaging"]
+    },
+    {
+      "id": "breast-cancer-multiview",
+      "weight": "primary",
+      "visual": "classifier",
+      "title": "Explainable Multi-View Breast Cancer Diagnosis",
+      "institution": "NIT Jalandhar",
+      "description": "A multi-view deep learning framework utilizing 8 CESM views for granular Normal / Benign / Malignant classification. Grad-CAM is integrated throughout so every prediction can be traced back to the radiological features that drove it.",
+      "metrics": {
+        "Views": "8 (CESM)",
+        "Classes": "Normal / Benign / Malignant",
         "Explainability": "Grad-CAM"
       },
-      "tags": [
-        "PyTorch",
-        "GANs",
-        "Medical Imaging",
-        "Grad-CAM"
-      ]
+      "tags": ["CNNs", "Explainable AI", "Medical Imaging", "Grad-CAM"]
     },
     {
-      "id": "engineering-01",
+      "id": "rag-legal",
+      "weight": "secondary",
+      "visual": "rag",
+      "title": "Advanced Multi-Stage RAG Pipeline for Legal Document QA",
+      "description": "A production-grade RAG system using hybrid retrieval (BM25 + FAISS) to maximize lexical and semantic coverage over legal documents. LLM-based query rewriting generates structured sub-queries, and cross-encoder reranking (MiniLM) filters irrelevant context before generation.",
+      "tech_stack": ["FastAPI", "Redis", "BM25", "FAISS", "MiniLM"],
+      "metrics": {
+        "Recall": "+22% via query rewriting",
+        "Latency": "4.2s → 0.9s (cached)",
+        "Retrieval": "Hybrid BM25 + FAISS"
+      },
+      "tags": ["RAG", "FAISS", "BM25", "FastAPI"]
+    },
+    {
+      "id": "agentic-crewai",
+      "weight": "secondary",
+      "visual": "agents",
+      "title": "Agentic AI Research & Report Automation System",
+      "description": "A multi-agent system built with CrewAI — dedicated agents for research, analysis, fact-checking, and report generation under structured orchestration. Real-time search (Serper API) and LangChain-based reasoning drive multi-hop synthesis, with human-in-the-loop checkpoints for reliability.",
+      "tech_stack": ["CrewAI", "LangChain", "Serper API"],
+      "metrics": {
+        "Output": "12+ page reports",
+        "Manual Effort": "-70%",
+        "Orchestration": "CrewAI + LangChain"
+      },
+      "tags": ["Agentic AI", "CrewAI", "LangChain", "LLMs"]
+    },
+    {
+      "id": "car-damage",
+      "weight": "secondary",
+      "visual": "vision",
       "title": "Car Damage Assessment System",
-      "description": "Developed an end-to-end damage classification system using a custom dataset of 2,300 vehicle images. Optimized model performance from 57% to 80% accuracy by transitioning from EfficientNet-B0 to a ResNet backbone and implemented automated hyperparameter tuning using Optuna.",
-      "tech_stack": [
-        "FastAPI",
-        "Streamlit",
-        "Optuna"
-      ],
+      "description": "An end-to-end damage classification system trained on a custom dataset of 2,300 vehicle images. Switching the backbone from EfficientNet-B0 to ResNet plus automated Optuna tuning lifted accuracy from 57% to 80%, and the model is deployed as a real-time inference service.",
+      "tech_stack": ["FastAPI", "Streamlit", "Optuna"],
       "deployment": "Real-time Inference",
-      "tags": [
-        "ResNet",
-        "EfficientNet",
-        "Computer Vision"
-      ]
-    },
-    {
-      "id": "teaching-01",
-      "title": "AI & ML Academic Profile",
-      "role": "Freelance Instructor & Researcher",
-      "philosophy": "Delivered intensive training in offline settings for undergraduate students, covering Python, ML, DL, and CNNs. Emphasized hands-on coding, practical datasets, and industry workflows.",
-      "impact": "Mentored students for internships, academic projects, and career guidance. Conducted awareness sessions in government schools for non-technical students.",
-      "tags": [
-        "Mentoring",
-        "Teaching",
-        "Hands-On Learning"
-      ]
-    },
-    {
-      "id": "engineering-02",
-      "title": "RAG-Based AI Knowledge Assistant",
-      "description": "Built a Retrieval-Augmented Generation (RAG) system using the Gemini API to provide context-aware answers from private documents. Implemented vector search for semantic retrieval and deployed the application on Hugging Face Spaces.",
-      "tech_stack": [
-        "Gemini API",
-        "Vector Search",
-        "Hugging Face"
-      ],
-      "deployment": "Hugging Face Spaces",
-      "tags": [
-        "LLMs",
-        "RAG",
-        "Prompt Engineering"
-      ]
+      "metrics": {
+        "Accuracy": "57% → 80%",
+        "Dataset": "2,300 images",
+        "Backbone": "ResNet"
+      },
+      "tags": ["ResNet", "EfficientNet", "Computer Vision"]
     }
   ]
 }

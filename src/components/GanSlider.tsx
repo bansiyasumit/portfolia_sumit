@@ -30,36 +30,35 @@ export const GanSlider = () => {
         <span>GAN Synth Output</span>
       </div>
       
-      <div 
+      <div
         ref={containerRef}
-        className="relative w-full h-[300px] md:h-[400px] rounded-lg overflow-hidden cursor-ew-resize glass-panel"
+        className="relative w-full max-w-md mx-auto h-[240px] sm:h-[280px] rounded-lg overflow-hidden cursor-ew-resize glass-panel"
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
       >
-        {/* Abstract representation of images since we don't have real medical ones */}
         {/* Base Image (Result) */}
         <div className="absolute inset-0 bg-[#0a0a1a] flex items-center justify-center">
-          <img 
-            src="/gan_output.jpg" 
-            alt="Enhanced DES Phantom" 
-            className="w-full h-full object-cover"
+          <img
+            src="/gan_output.jpg"
+            alt="Enhanced DES Phantom"
+            className="w-full h-full object-contain p-3"
           />
-          <div className="absolute font-orbitron text-[#00f3ff]/80 font-bold bg-black/60 px-2 py-1 rounded text-xs bottom-4 right-4 tracking-widest">
+          <div className="absolute font-orbitron text-[#00f3ff]/80 font-bold bg-black/60 px-2 py-1 rounded text-xs bottom-3 right-3 tracking-widest">
             ENHANCED DES PHANTOM
           </div>
         </div>
 
         {/* Overlay Image (Source) */}
-        <div 
+        <div
           className="absolute inset-0 bg-[#050505] flex items-center justify-center overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
-          <img 
-            src="/low_energy.jpg" 
-            alt="Low-Energy Source" 
-            className="w-full h-full object-cover"
+          <img
+            src="/low_energy.jpg"
+            alt="Low-Energy Source"
+            className="w-full h-full object-contain p-3"
           />
-          <div className="absolute font-orbitron text-gray-300 font-bold bg-black/60 px-2 py-1 rounded text-xs bottom-4 left-4 tracking-widest">
+          <div className="absolute font-orbitron text-gray-300 font-bold bg-black/60 px-2 py-1 rounded text-xs bottom-3 left-3 tracking-widest">
             LOW-ENERGY SOURCE
           </div>
         </div>

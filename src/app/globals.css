@@ -22,6 +22,7 @@
   
   --font-orbitron: var(--font-orbitron), sans-serif;
   --font-inter: var(--font-inter), sans-serif;
+  --font-mono: var(--font-mono), monospace;
 }
 
 @utility glass-panel {

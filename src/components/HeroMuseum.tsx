@@ -1,12 +1,13 @@
 "use client";
 
 import { motion, Variants } from "framer-motion";
-import { Terminal, ArrowRight } from "lucide-react";
+import { Terminal, ArrowRight, Award } from "lucide-react";
 import Image from "next/image";
 import profileData from "../data/profile.json";
 
 export const HeroMuseum = () => {
   const { name, title, bio } = profileData.profile;
+  const achievement = (profileData as any).achievements?.[0];
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -24,7 +25,7 @@ export const HeroMuseum = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-20 px-6 z-10 w-full overflow-hidden">
+    <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 px-6 z-10 w-full overflow-hidden scroll-mt-24">
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <motion.div 
           className="w-full"
@@ -57,17 +58,32 @@ export const HeroMuseum = () => {
             </h2>
           </motion.div>
 
-          <motion.p 
+          <motion.p
             variants={itemVariants}
-            className="text-gray-400 max-w-2xl text-lg md:text-xl leading-relaxed mb-12 font-inter"
+            className="text-gray-400 max-w-2xl text-lg md:text-xl leading-relaxed mb-6 font-inter"
           >
             {bio}
           </motion.p>
 
+          {achievement && (
+            <motion.div
+              variants={itemVariants}
+              className="inline-flex items-center gap-3 mb-10 px-4 py-2 rounded-sm glass-panel border border-[#ff00ff]/30 shadow-[0_0_20px_rgba(255,0,255,0.1)]"
+            >
+              <Award size={18} className="text-[#ff00ff] shrink-0" />
+              <span className="font-inter text-sm text-gray-200">
+                <span className="font-orbitron text-[#ff00ff] tracking-wider uppercase text-xs mr-2">
+                  {achievement.title}
+                </span>
+                {achievement.org}
+              </span>
+            </motion.div>
+          )}
+
           <motion.div variants={itemVariants} className="flex flex-wrap gap-6">
-            <a href="#research" className="group relative px-6 py-3 font-orbitron text-sm uppercase tracking-widest overflow-hidden">
+            <a href="#projects" className="group relative px-6 py-3 font-orbitron text-sm uppercase tracking-widest overflow-hidden">
               <span className="relative z-10 text-white group-hover:text-[#020202] transition-colors duration-300">
-                Enter Museum
+                View Projects
               </span>
               <div className="absolute inset-0 border border-[#00f3ff] glow-border transition-all duration-300"></div>
               <div className="absolute inset-0 bg-[#00f3ff] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
