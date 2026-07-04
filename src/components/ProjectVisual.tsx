@@ -10,7 +10,7 @@ const draw = {
   visible: (i: number = 0) => ({
     pathLength: 1,
     opacity: 1,
-    transition: { pathLength: { duration: 1.1, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }, opacity: { duration: 0.3, delay: i * 0.12 } },
+    transition: { pathLength: { duration: 1.1, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] as const }, opacity: { duration: 0.3, delay: i * 0.12 } },
   }),
 };
 

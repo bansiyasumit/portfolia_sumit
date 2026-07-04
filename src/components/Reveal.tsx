@@ -45,7 +45,7 @@ export function Reveal({
       opacity: 1,
       x: 0,
       y: 0,
-      transition: { duration, delay, ease: [0.16, 1, 0.3, 1] },
+      transition: { duration, delay, ease: [0.16, 1, 0.3, 1] as const },
     },
   };
 
@@ -98,7 +98,7 @@ export function RevealStagger({
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
 export function RevealItem({ children, className }: { children: ReactNode; className?: string }) {
