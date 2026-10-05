@@ -56,6 +56,7 @@ export const Preloader = () => {
       {visible && (
         <motion.div
           key="leader"
+          data-preloader
           className="fixed inset-0 z-[200] cursor-pointer select-none"
           onClick={finish}
           exit={{ opacity: 1 }}

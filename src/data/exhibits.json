@@ -12,7 +12,36 @@
         "Validation": "ROI-based statistics",
         "Status": "Optimizing high-res reconstruction"
       },
-      "tags": ["PyTorch", "Pix2Pix", "Seg-CycleGAN", "Medical Imaging"]
+      "tags": [
+        "PyTorch",
+        "Pix2Pix",
+        "Seg-CycleGAN",
+        "Medical Imaging"
+      ],
+      "scene": "diffusion",
+      "logline": "Radiation-free screening research: synthesize the contrast-enhanced view from the scan a patient already has.",
+      "pipeline": [
+        {
+          "label": "Input",
+          "text": "Low-energy mammogram"
+        },
+        {
+          "label": "Baseline",
+          "text": "Pix2Pix GAN synthesizes a Dual-Energy Subtracted (DES) phantom"
+        },
+        {
+          "label": "Evolution",
+          "text": "Seg-CycleGAN pairs segmentation-guided attention with cycle-consistency losses"
+        },
+        {
+          "label": "Goal",
+          "text": "High-resolution lesion reconstruction and artifact removal"
+        },
+        {
+          "label": "Validation",
+          "text": "PSNR / SSIM / LPIPS plus ROI-based statistics"
+        }
+      ]
     },
     {
       "id": "breast-cancer-multiview",
@@ -26,7 +55,32 @@
         "Classes": "Normal / Benign / Malignant",
         "Explainability": "Grad-CAM"
       },
-      "tags": ["CNNs", "Explainable AI", "Medical Imaging", "Grad-CAM"]
+      "tags": [
+        "CNNs",
+        "Explainable AI",
+        "Medical Imaging",
+        "Grad-CAM"
+      ],
+      "scene": "multiview",
+      "logline": "Eight views in, one diagnosis out — and every prediction can show its reasoning.",
+      "pipeline": [
+        {
+          "label": "Input",
+          "text": "8 CESM views per case"
+        },
+        {
+          "label": "Model",
+          "text": "Multi-view deep learning framework"
+        },
+        {
+          "label": "Output",
+          "text": "Normal / Benign / Malignant classification"
+        },
+        {
+          "label": "Explainability",
+          "text": "Grad-CAM traces each prediction back to the radiological features that drove it"
+        }
+      ]
     },
     {
       "id": "rag-legal",
@@ -34,13 +88,48 @@
       "visual": "rag",
       "title": "Advanced Multi-Stage RAG Pipeline for Legal Document QA",
       "description": "A production-grade RAG system using hybrid retrieval (BM25 + FAISS) to maximize lexical and semantic coverage over legal documents. LLM-based query rewriting generates structured sub-queries, and cross-encoder reranking (MiniLM) filters irrelevant context before generation.",
-      "tech_stack": ["FastAPI", "Redis", "BM25", "FAISS", "MiniLM"],
+      "tech_stack": [
+        "FastAPI",
+        "Redis",
+        "BM25",
+        "FAISS",
+        "MiniLM"
+      ],
       "metrics": {
         "Recall": "+22% via query rewriting",
         "Latency": "4.2s → 0.9s (cached)",
         "Retrieval": "Hybrid BM25 + FAISS"
       },
-      "tags": ["RAG", "FAISS", "BM25", "FastAPI"]
+      "tags": [
+        "RAG",
+        "FAISS",
+        "BM25",
+        "FastAPI"
+      ],
+      "scene": "retrieval",
+      "logline": "Legal QA that finds the right clause first — then answers.",
+      "pipeline": [
+        {
+          "label": "Rewrite",
+          "text": "LLM-based query rewriting generates structured sub-queries (+22% recall)"
+        },
+        {
+          "label": "Retrieve",
+          "text": "Hybrid BM25 + FAISS for lexical and semantic coverage"
+        },
+        {
+          "label": "Rerank",
+          "text": "Cross-encoder (MiniLM) filters irrelevant context"
+        },
+        {
+          "label": "Generate",
+          "text": "Answer grounded in the reranked context"
+        },
+        {
+          "label": "Serve",
+          "text": "FastAPI with Redis caching: 4.2s → 0.9s on repeated queries"
+        }
+      ]
     },
     {
       "id": "agentic-crewai",
@@ -48,13 +137,46 @@
       "visual": "agents",
       "title": "Agentic AI Research & Report Automation System",
       "description": "A multi-agent system built with CrewAI — dedicated agents for research, analysis, fact-checking, and report generation under structured orchestration. Real-time search (Serper API) and LangChain-based reasoning drive multi-hop synthesis, with human-in-the-loop checkpoints for reliability.",
-      "tech_stack": ["CrewAI", "LangChain", "Serper API"],
+      "tech_stack": [
+        "CrewAI",
+        "LangChain",
+        "Serper API"
+      ],
       "metrics": {
         "Output": "12+ page reports",
         "Manual Effort": "-70%",
         "Orchestration": "CrewAI + LangChain"
       },
-      "tags": ["Agentic AI", "CrewAI", "LangChain", "LLMs"]
+      "tags": [
+        "Agentic AI",
+        "CrewAI",
+        "LangChain",
+        "LLMs"
+      ],
+      "scene": "agents",
+      "logline": "A research team made of agents: they search, analyse, fact-check and write.",
+      "pipeline": [
+        {
+          "label": "Research agent",
+          "text": "Real-time search via Serper API"
+        },
+        {
+          "label": "Analysis agent",
+          "text": "LangChain-based multi-hop reasoning"
+        },
+        {
+          "label": "Fact-check agent",
+          "text": "Verifies claims before they reach the report"
+        },
+        {
+          "label": "Report agent",
+          "text": "Generates 12+ page reports in minutes"
+        },
+        {
+          "label": "Human in the loop",
+          "text": "Checkpoints for reliability; ~70% less manual effort"
+        }
+      ]
     },
     {
       "id": "car-damage",
@@ -62,14 +184,42 @@
       "visual": "vision",
       "title": "Car Damage Assessment System",
       "description": "An end-to-end damage classification system trained on a custom dataset of 2,300 vehicle images. Switching the backbone from EfficientNet-B0 to ResNet plus automated Optuna tuning lifted accuracy from 57% to 80%, and the model is deployed as a real-time inference service.",
-      "tech_stack": ["FastAPI", "Streamlit", "Optuna"],
+      "tech_stack": [
+        "FastAPI",
+        "Streamlit",
+        "Optuna"
+      ],
       "deployment": "Real-time Inference",
       "metrics": {
         "Accuracy": "57% → 80%",
         "Dataset": "2,300 images",
         "Backbone": "ResNet"
       },
-      "tags": ["ResNet", "EfficientNet", "Computer Vision"]
+      "tags": [
+        "ResNet",
+        "EfficientNet",
+        "Computer Vision"
+      ],
+      "scene": "features",
+      "logline": "From a photo of a car to a damage class, in real time.",
+      "pipeline": [
+        {
+          "label": "Data",
+          "text": "Custom dataset of 2,300 vehicle images"
+        },
+        {
+          "label": "Baseline",
+          "text": "EfficientNet-B0 at 57% accuracy"
+        },
+        {
+          "label": "Upgrade",
+          "text": "ResNet backbone + automated Optuna tuning → 80%"
+        },
+        {
+          "label": "Deploy",
+          "text": "Real-time inference with FastAPI + Streamlit"
+        }
+      ]
     }
   ]
 }

@@ -8,7 +8,7 @@ import { SceneHeader } from "./SceneHeader";
 import { ScrollWords } from "./ScrollWords";
 
 const STORY =
-  "Born in a village in Agar Malwa, Madhya Pradesh. Somewhere between a pandemic, a long recovery and a lot of late nights, I found my *medium:* machines that learn to *see.* Today I research generative models that make breast-cancer screening *safer,* build LLM systems that hold up in production, and teach the next batch of engineers to do the same.";
+  "From Agar Malwa, Madhya Pradesh, to an M.Tech in AI at NIT Jalandhar, my work centres on machines that learn to *see.* I research generative models that make breast-cancer screening *safer,* build LLM systems that hold up in *production,* and teach the next generation of engineers to do the same.";
 
 const STATS = [
   { value: 8.43, decimals: 2, label: "M.Tech CGPA", sub: "NIT Jalandhar" },
@@ -69,7 +69,7 @@ export const OriginSection = () => {
   const fellowship = achievements[0];
 
   return (
-    <section id="origin" className="relative py-28 md:py-40 overflow-x-clip">
+    <section id="origin" data-scene="Origin" className="relative py-28 md:py-40 overflow-x-clip">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
         <SceneHeader number={2} slug="Int. Village to lab — dawn" title="Origin" accent="story" />
 

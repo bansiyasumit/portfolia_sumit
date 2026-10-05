@@ -9,7 +9,7 @@ const QUESTIONS = [
   "What is Seg-CycleGAN and why does it matter?",
   "How did you cut RAG latency from 4.2s to 0.9s?",
   "Walk me through your agent crew.",
-  "What's your origin story? /lore",
+  "Take me to your thesis",
 ];
 
 const openAgent = (prompt?: string) =>
@@ -51,14 +51,14 @@ export const AgentSection = () => {
   const typed = useTypewriter(QUESTIONS);
 
   return (
-    <section id="agent" className="relative py-28 md:py-40">
+    <section id="agent" data-scene="Agent" className="relative py-28 md:py-40">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
         <SceneHeader
           number={5}
           slug="Int. Interrogation room — live"
           title="Interview"
           accent="my AI twin"
-          intro="Skip the résumé. A Groq-powered model that knows my research, projects and story answers in real time, in my voice."
+          intro="Skip the résumé. A tool-using agent grounded in my real record — it looks things up before it answers, keeps it brief, and can walk you around this site."
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -80,7 +80,7 @@ export const AgentSection = () => {
               <span className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-teal animate-pulse" /> Agent.Sumit — online
               </span>
-              <span>Groq · Llama 3.1</span>
+              <span>Groq · gpt-oss-120b</span>
             </div>
             <div className="flex-1 flex items-center">
               <p className="font-serif italic text-3xl md:text-5xl leading-tight text-paper">
@@ -108,7 +108,7 @@ export const AgentSection = () => {
                 <span className="text-ember group-hover:translate-x-1 transition-transform">→</span>
               </motion.button>
             ))}
-            <p className="hud text-paper/30 mt-2">Tip: try /bio, /lore or /credits</p>
+            <p className="hud text-paper/30 mt-2">Tip: it can also navigate — try “show me the RAG project”</p>
           </div>
         </div>
       </div>

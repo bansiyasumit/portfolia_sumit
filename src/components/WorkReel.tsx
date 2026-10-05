@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
 import exhibitsData from "@/data/exhibits.json";
@@ -77,6 +78,15 @@ const Frame = ({ exhibit, index }: { exhibit: Exhibit; index: number }) => {
               ))}
             </div>
           )}
+
+          <Link
+            href={`/work/${exhibit.id}`}
+            data-cursor="OPEN"
+            className="group mt-5 self-start inline-flex items-center gap-3 text-sm text-paper hover:text-ember transition-colors"
+          >
+            <span className="w-8 h-8 rounded-full border border-paper/30 group-hover:border-ember flex items-center justify-center text-[10px]">▶</span>
+            Watch the full take
+          </Link>
 
           {exhibit.metrics && (
             <dl className="mt-auto pt-6 grid grid-cols-3 gap-px bg-paper/10 border border-paper/10">
@@ -177,7 +187,7 @@ export const WorkReel = () => {
   }, []);
 
   return (
-    <section id="work" className="relative pt-28 md:pt-40">
+    <section id="work" data-scene="The Work" className="relative pt-28 md:pt-40">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
         <SceneHeader
           number={3}

@@ -60,7 +60,7 @@ export const Hero = () => {
   }, []);
 
   return (
-    <section id="home" ref={sectionRef} className="relative h-[260vh]">
+    <section id="home" data-scene="Opening" ref={sectionRef} className="relative h-[260vh]">
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
         {/* Ambient glow behind the portrait */}
         <div className="absolute inset-0 pointer-events-none">

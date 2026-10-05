@@ -4,7 +4,6 @@ import { WorkReel } from "@/components/WorkReel";
 import { PathSection } from "@/components/PathSection";
 import { AgentSection } from "@/components/AgentSection";
 import { CreditsSection } from "@/components/CreditsSection";
-import { AgentSumit } from "@/components/AgentSumit";
 
 export default function Home() {
   return (
@@ -15,7 +14,6 @@ export default function Home() {
       <PathSection />
       <AgentSection />
       <CreditsSection />
-      <AgentSumit />
     </>
   );
 }

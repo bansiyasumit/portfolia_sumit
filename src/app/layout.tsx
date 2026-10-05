@@ -6,6 +6,7 @@ import { FilmCursor } from "@/components/FilmCursor";
 import { FilmOverlay } from "@/components/FilmOverlay";
 import { Preloader } from "@/components/Preloader";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { AgentSumit } from "@/components/AgentSumit";
 
 const inter = Inter({ subsets: ["latin"], variable: "--nf-inter" });
 const anton = Anton({ subsets: ["latin"], weight: "400", variable: "--nf-anton" });
@@ -99,6 +100,15 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${anton.variable} ${instrument.variable} ${jetbrainsMono.variable}`}
     >
+      <head>
+        {/* Hide the intro before first paint for visitors who already watched it this session. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(sessionStorage.getItem('sb-reel-seen')==='1')document.documentElement.classList.add('reel-seen')}catch(e){}",
+          }}
+        />
+      </head>
       <body
         suppressHydrationWarning
         className="antialiased bg-ink text-paper custom-scrollbar"
@@ -114,6 +124,7 @@ export default function RootLayout({
         <FilmOverlay />
         <Navigation />
         <main className="relative z-10 w-full">{children}</main>
+        <AgentSumit />
       </body>
     </html>
   );

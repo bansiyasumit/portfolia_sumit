@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import exhibitsData from "@/data/exhibits.json";
 
 const SITE_URL = "https://portfolia-sumit.vercel.app";
 
@@ -10,5 +11,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 1,
     },
+    ...exhibitsData.exhibits.map((p) => ({
+      url: `${SITE_URL}/work/${p.id}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
   ];
 }

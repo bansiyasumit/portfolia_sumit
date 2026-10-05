@@ -176,3 +176,32 @@ html.lenis body {
     cursor: none;
   }
 }
+
+/* Agent Sumit — rendered markdown answers */
+.agent-md > * + * { margin-top: 0.6em; }
+.agent-md strong { color: var(--paper); font-weight: 600; }
+.agent-md ul, .agent-md ol { padding-left: 1.1em; display: flex; flex-direction: column; gap: 0.35em; }
+.agent-md ul { list-style: none; }
+.agent-md ul > li { position: relative; }
+.agent-md ul > li::before { content: ""; position: absolute; left: -0.95em; top: 0.62em; width: 5px; height: 5px; border-radius: 9999px; background: var(--ember); }
+.agent-md ol { list-style: decimal; }
+.agent-md ol > li::marker { color: var(--ember); font-family: var(--nf-mono), monospace; font-size: 0.85em; }
+.agent-md code { font-family: var(--nf-mono), monospace; font-size: 0.85em; background: rgba(236, 232, 225, 0.08); padding: 0.1em 0.35em; border-radius: 4px; }
+.agent-md h1, .agent-md h2, .agent-md h3 { font-weight: 600; color: var(--paper); font-size: 1em; }
+.agent-md table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+.agent-md th, .agent-md td { border-bottom: 1px solid var(--line); padding: 0.4em 0.5em; text-align: left; vertical-align: top; }
+.agent-md th { color: var(--muted); font-weight: 500; }
+
+/* Returning visitors (and reduced motion) never see the intro flash */
+html.reel-seen [data-preloader] { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-preloader] { display: none; }
+}
+
+/* Project page opening — pure CSS so it plays on first paint, before hydration */
+@keyframes letterbox-open { from { height: 50vh; } to { height: 7vh; } }
+@keyframes rise-in { from { transform: translateY(105%); } to { transform: none; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.anim-letterbox { height: 7vh; animation: letterbox-open 1.4s cubic-bezier(0.76, 0, 0.24, 1) both; }
+.anim-rise { animation: rise-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-fade-up { animation: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) both; }

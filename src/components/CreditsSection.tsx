@@ -9,9 +9,9 @@ const CREDITS: [string, string[]][] = [
   ["Written & researched by", ["Sumit Bansiya"]],
   ["Research home", ["NIT Jalandhar"]],
   ["Supported by", ["IndiaAI Mission", "MeitY, Government of India"]],
-  ["Origin", ["MITS Gwalior", "Agar Malwa, Madhya Pradesh"]],
+  ["Trained at", ["MITS Gwalior — B.Tech, AI"]],
   ["Starring", ["Seg-CycleGAN", "Multi-View CESM Classifier", "Legal RAG Pipeline", "The Agent Crew", "Car Damage ResNet"]],
-  ["Special thanks", ["My family", "Dheer · Satvik · Satyam · Samar", "Harshit · Vatsal · Pranav", "Every student I've taught"]],
+  ["Mentoring", ["AI & ML Academy", "Every student I've taught"]],
   ["Shot on", ["Next.js · React Three Fiber", "Framer Motion · Lenis · Tailwind"]],
 ];
 
@@ -25,7 +25,7 @@ export const CreditsSection = () => {
   const { profile } = profileData;
 
   return (
-    <section id="credits" className="relative pt-28 md:pt-40 pb-20 overflow-x-clip">
+    <section id="credits" data-scene="Credits" className="relative pt-28 md:pt-40 pb-20 overflow-x-clip">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
         <SceneHeader number={6} slug="Fade in — the sequel" title="Let's make" accent="the sequel." />
 

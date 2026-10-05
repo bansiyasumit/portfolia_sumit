@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SCENES, toTimecode } from "@/lib/film";
+import { usePathname } from "next/navigation";
+import { toTimecode } from "@/lib/film";
 
 /** Total "runtime" the page maps onto, so the timecode reads like a real reel. */
 const RUNTIME_SECONDS = 4 * 60 + 12;
@@ -15,7 +16,8 @@ const RUNTIME_SECONDS = 4 * 60 + 12;
 export const FilmOverlay = () => {
   const timecodeRef = useRef<HTMLSpanElement>(null);
   const playheadRef = useRef<HTMLDivElement>(null);
-  const [scene, setScene] = useState(0);
+  const pathname = usePathname();
+  const [scene, setScene] = useState({ index: 0, label: "Opening" });
 
   useEffect(() => {
     let frame = 0;
@@ -28,26 +30,25 @@ export const FilmOverlay = () => {
     };
     frame = requestAnimationFrame(tick);
 
+    // Any element with data-scene="Label" is a scene; order on the page = scene number.
+    const scenes = Array.from(document.querySelectorAll<HTMLElement>("[data-scene]"));
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
-          const idx = SCENES.findIndex((s) => s.id === entry.target.id);
-          if (idx >= 0) setScene(idx);
+          const el = entry.target as HTMLElement;
+          setScene({ index: scenes.indexOf(el), label: el.dataset.scene ?? "" });
         });
       },
       { rootMargin: "-45% 0px -45% 0px" }
     );
-    SCENES.forEach((s) => {
-      const el = document.getElementById(s.id);
-      if (el) observer.observe(el);
-    });
+    scenes.forEach((el) => observer.observe(el));
 
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <>
@@ -59,7 +60,7 @@ export const FilmOverlay = () => {
         <span ref={timecodeRef} className="tabular-nums">00:00:00:00</span>
         <span className="hidden sm:inline text-paper/30">|</span>
         <span className="hidden sm:inline">
-          SC {String(scene + 1).padStart(2, "0")} — {SCENES[scene].label}
+          SC {String(scene.index + 1).padStart(2, "0")} — {scene.label}
         </span>
       </div>
 

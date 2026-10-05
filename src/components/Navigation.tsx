@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { OPEN_AGENT_EVENT, SCENES } from "@/lib/film";
 
@@ -10,6 +11,8 @@ export const Navigation = () => {
   const [hidden, setHidden] = useState(false);
   const [solid, setSolid] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // On project pages the section anchors live on the home page.
+  const base = usePathname() === "/" ? "" : "/";
 
   useEffect(() => {
     let last = window.scrollY;
@@ -37,7 +40,7 @@ export const Navigation = () => {
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-5 md:px-10 h-16 md:h-20 flex items-center justify-between">
-          <a href="#home" className="flex items-baseline gap-2 group" onClick={() => setMenuOpen(false)}>
+          <a href={`${base}#home`} className="flex items-baseline gap-2 group" onClick={() => setMenuOpen(false)}>
             <span className="font-display text-2xl tracking-wide text-paper">SB</span>
             <span className="font-serif italic text-lg text-paper/60 group-hover:text-ember transition-colors hidden sm:inline">
               Sumit Bansiya
@@ -48,7 +51,7 @@ export const Navigation = () => {
             {LINKS.map((link, i) => (
               <a
                 key={link.id}
-                href={`#${link.id}`}
+                href={`${base}#${link.id}`}
                 className="group hud text-paper/60 hover:text-paper transition-colors flex items-center gap-1.5"
               >
                 <span className="text-ember/70 group-hover:text-ember">{String(i + 1).padStart(2, "0")}</span>
@@ -90,7 +93,7 @@ export const Navigation = () => {
             {LINKS.map((link, i) => (
               <div key={link.id} className="overflow-hidden">
                 <motion.a
-                  href={`#${link.id}`}
+                  href={`${base}#${link.id}`}
                   onClick={() => setMenuOpen(false)}
                   className="flex items-baseline gap-4 py-2"
                   initial={{ y: "100%" }}
