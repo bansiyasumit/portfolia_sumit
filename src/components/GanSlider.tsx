@@ -24,15 +24,16 @@ export const GanSlider = () => {
   };
 
   return (
-    <div className="mt-6 flex flex-col gap-4">
-      <div className="flex justify-between items-center text-xs font-orbitron uppercase text-[#00f3ff] mb-2">
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-between items-center text-xs font-orbitron uppercase text-[#3ee6d9] mb-2">
         <span>Low-Energy Input</span>
         <span>GAN Synth Output</span>
       </div>
       
       <div
         ref={containerRef}
-        className="relative w-full max-w-md mx-auto h-[240px] sm:h-[280px] rounded-lg overflow-hidden cursor-ew-resize glass-panel"
+        data-cursor="DRAG"
+        className="relative w-full h-[240px] sm:h-[300px] rounded-sm overflow-hidden cursor-ew-resize glass-panel"
         onMouseMove={handleMouseMove}
         onTouchMove={handleMouseMove}
       >
@@ -43,7 +44,7 @@ export const GanSlider = () => {
             alt="Enhanced DES Phantom"
             className="w-full h-full object-contain p-3"
           />
-          <div className="absolute font-orbitron text-[#00f3ff]/80 font-bold bg-black/60 px-2 py-1 rounded text-xs bottom-3 right-3 tracking-widest">
+          <div className="absolute font-orbitron text-[#3ee6d9]/80 font-bold bg-black/60 px-2 py-1 rounded text-[8px] sm:text-xs bottom-3 right-3 tracking-widest">
             ENHANCED DES PHANTOM
           </div>
         </div>
@@ -58,20 +59,20 @@ export const GanSlider = () => {
             alt="Low-Energy Source"
             className="w-full h-full object-contain p-3"
           />
-          <div className="absolute font-orbitron text-gray-300 font-bold bg-black/60 px-2 py-1 rounded text-xs bottom-3 left-3 tracking-widest">
+          <div className="absolute font-orbitron text-gray-300 font-bold bg-black/60 px-2 py-1 rounded text-[8px] sm:text-xs bottom-3 left-3 tracking-widest">
             LOW-ENERGY SOURCE
           </div>
         </div>
 
         {/* Slider Divider */}
         <div 
-          className="absolute top-0 bottom-0 w-1 bg-[#00f3ff] shadow-[0_0_15px_#00f3ff] flex items-center justify-center"
+          className="absolute top-0 bottom-0 w-1 bg-[#3ee6d9] shadow-[0_0_15px_#3ee6d9] flex items-center justify-center"
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
         >
-          <div className="w-6 h-10 bg-black border border-[#00f3ff] flex items-center justify-center rounded-sm">
+          <div className="w-6 h-10 bg-black border border-[#3ee6d9] flex items-center justify-center rounded-sm">
             <div className="flex gap-1">
-              <div className="w-0.5 h-4 bg-[#00f3ff]"></div>
-              <div className="w-0.5 h-4 bg-[#00f3ff]"></div>
+              <div className="w-0.5 h-4 bg-[#3ee6d9]"></div>
+              <div className="w-0.5 h-4 bg-[#3ee6d9]"></div>
             </div>
           </div>
         </div>

@@ -58,7 +58,7 @@
     },
     {
       "keywords": ["/credits"],
-      "response": "[SYSTEM] Built 2026. Tech Stack: Next.js 16, React 19, Framer Motion, Tailwind V4, FlexSearch. Theme: Cyberpunk Neon Node Interface."
+      "response": "[SYSTEM] Built 2026. Tech Stack: Next.js 16, React 19, Three.js / React Three Fiber, Framer Motion, Lenis, Tailwind v4. Theme: Cinematic — the portfolio as a film. Hero portrait rendered live from 3D particles (React Three Fiber + custom shaders), smooth-scrolled with Lenis."
     },
     {
       "keywords": ["/books", "books", "library", "certifications", "nptel"],

@@ -1,94 +1,119 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { OPEN_AGENT_EVENT, SCENES } from "@/lib/film";
+
+const LINKS = SCENES.filter((s) => s.id !== "home");
 
 export const Navigation = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [solid, setSolid] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setSolid(y > 40);
+      setHidden(y > last && y > 200);
+      last = y;
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Projects", href: "#projects" },
-    { name: "Agent", href: "#agent" },
-    { name: "Contact", href: "#contact" },
-  ];
+  useEffect(() => {
+    document.documentElement.style.overflow = menuOpen ? "hidden" : "";
+  }, [menuOpen]);
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 100, damping: 20 }}
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "glass-panel border-b border-[var(--glass-border)] py-2" : "bg-transparent py-4"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-sm bg-black border border-[#00f3ff] shadow-[0_0_10px_rgba(0,243,255,0.5)] flex items-center justify-center">
-            <span className="font-orbitron font-bold text-[#00f3ff] text-sm tracking-tighter">SB</span>
-          </div>
-          <span className="font-orbitron font-semibold text-white tracking-widest uppercase text-sm md:text-base hidden sm:block">
-            Sumit Bansiya
-          </span>
-        </div>
+    <>
+      <motion.nav
+        animate={{ y: hidden && !menuOpen ? "-110%" : "0%" }}
+        transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+        className={`fixed top-0 inset-x-0 z-[120] transition-colors duration-500 ${
+          solid && !menuOpen ? "bg-ink/70 backdrop-blur-md border-b border-paper/5" : "bg-transparent"
+        }`}
+      >
+        <div className="max-w-[1400px] mx-auto px-5 md:px-10 h-16 md:h-20 flex items-center justify-between">
+          <a href="#home" className="flex items-baseline gap-2 group" onClick={() => setMenuOpen(false)}>
+            <span className="font-display text-2xl tracking-wide text-paper">SB</span>
+            <span className="font-serif italic text-lg text-paper/60 group-hover:text-ember transition-colors hidden sm:inline">
+              Sumit Bansiya
+            </span>
+          </a>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex gap-8">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="font-orbitron text-xs tracking-wider text-gray-400 hover:text-[#00f3ff] hover:neon-text-cyan transition-all uppercase"
+          <div className="hidden md:flex items-center gap-8">
+            {LINKS.map((link, i) => (
+              <a
+                key={link.id}
+                href={`#${link.id}`}
+                className="group hud text-paper/60 hover:text-paper transition-colors flex items-center gap-1.5"
+              >
+                <span className="text-ember/70 group-hover:text-ember">{String(i + 1).padStart(2, "0")}</span>
+                {link.label}
+              </a>
+            ))}
+            <button
+              onClick={() => window.dispatchEvent(new Event(OPEN_AGENT_EVENT))}
+              className="hud text-ink bg-paper hover:bg-ember px-4 py-2.5 rounded-full transition-colors"
             >
-              {link.name}
-            </a>
-          ))}
-        </div>
+              Ask my AI
+            </button>
+          </div>
 
-        {/* Mobile Menu Toggle */}
-        <button
-          className="md:hidden text-[#00f3ff] focus:outline-none"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Mobile Nav Overlay */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-[#020202]/95 backdrop-blur-md absolute w-full top-full left-0 border-b border-[#00f3ff]/20"
+          <button
+            className="md:hidden hud text-paper flex items-center gap-2 py-2"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-expanded={menuOpen}
+            aria-label="Toggle menu"
           >
-            <div className="flex flex-col p-6 gap-6">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="font-orbitron text-sm tracking-wider text-white hover:text-[#00f3ff] transition-colors uppercase border-b border-white/5 pb-2"
+            {menuOpen ? "Close" : "Menu"}
+            <span className="flex flex-col gap-1">
+              <span className={`block w-5 h-px bg-paper transition-transform ${menuOpen ? "translate-y-[2.5px] rotate-45" : ""}`} />
+              <span className={`block w-5 h-px bg-paper transition-transform ${menuOpen ? "-translate-y-[2.5px] -rotate-45" : ""}`} />
+            </span>
+          </button>
+        </div>
+      </motion.nav>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="fixed inset-0 z-[110] bg-ink flex flex-col justify-center px-6"
+            initial={{ clipPath: "inset(0 0 100% 0)" }}
+            animate={{ clipPath: "inset(0 0 0% 0)" }}
+            exit={{ clipPath: "inset(0 0 100% 0)" }}
+            transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
+          >
+            {LINKS.map((link, i) => (
+              <div key={link.id} className="overflow-hidden">
+                <motion.a
+                  href={`#${link.id}`}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-baseline gap-4 py-2"
+                  initial={{ y: "100%" }}
+                  animate={{ y: "0%" }}
+                  transition={{ delay: 0.25 + i * 0.06, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  {link.name}
-                </a>
-              ))}
-            </div>
+                  <span className="hud text-ember">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-display text-5xl uppercase text-paper">{link.label}</span>
+                </motion.a>
+              </div>
+            ))}
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                window.dispatchEvent(new Event(OPEN_AGENT_EVENT));
+              }}
+              className="mt-10 self-start hud text-ink bg-ember px-5 py-3 rounded-full"
+            >
+              Ask my AI
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </>
   );
 };

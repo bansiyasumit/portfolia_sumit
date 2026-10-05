@@ -3,22 +3,27 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, X, Send, Cpu } from "lucide-react";
-import { OPEN_AGENT_EVENT } from "./AgentSection";
+import { OPEN_AGENT_EVENT } from "@/lib/film";
 
 export const AgentSumit = () => {
   const [isOpen, setIsOpen] = useState(false);
-
-  // Allow any in-page CTA (e.g. the "Talk to Agent Sumit" section) to open
-  // this same floating widget instead of duplicating chat logic elsewhere.
-  useEffect(() => {
-    const handleOpen = () => setIsOpen(true);
-    window.addEventListener(OPEN_AGENT_EVENT, handleOpen);
-    return () => window.removeEventListener(OPEN_AGENT_EVENT, handleOpen);
-  }, []);
   const [messages, setMessages] = useState([
     { role: "agent", content: "Systems online. AGENT_SUMIT initialized. Awaiting input or terminal command..." }
   ]);
   const [input, setInput] = useState("");
+
+  // Allow any in-page CTA (e.g. the "Talk to Agent Sumit" section) to open
+  // this same floating widget instead of duplicating chat logic elsewhere.
+  // A CTA can also pass { prompt } to pre-fill the question.
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      setIsOpen(true);
+      const prompt = (e as CustomEvent<{ prompt?: string }>).detail?.prompt;
+      if (prompt) setInput(prompt);
+    };
+    window.addEventListener(OPEN_AGENT_EVENT, handleOpen);
+    return () => window.removeEventListener(OPEN_AGENT_EVENT, handleOpen);
+  }, []);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -73,10 +78,10 @@ export const AgentSumit = () => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-black border border-[#00f3ff] rounded-full shadow-[0_0_20px_rgba(0,243,255,0.3)] flex items-center justify-center group hover:bg-[#00f3ff]/10 transition-colors"
+            className="fixed bottom-6 right-6 z-[150] w-14 h-14 bg-black border border-[#3ee6d9] rounded-full shadow-[0_0_20px_rgba(62,230,217,0.3)] flex items-center justify-center group hover:bg-[#3ee6d9]/10 transition-colors"
           >
-            <div className="absolute inset-0 rounded-full border border-[#00f3ff] animate-ping opacity-20"></div>
-            <Cpu className="text-[#00f3ff] group-hover:scale-110 transition-transform" size={24} />
+            <div className="absolute inset-0 rounded-full border border-[#3ee6d9] animate-ping opacity-20"></div>
+            <Cpu className="text-[#3ee6d9] group-hover:scale-110 transition-transform" size={24} />
           </motion.button>
         )}
       </AnimatePresence>
@@ -87,24 +92,24 @@ export const AgentSumit = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 bg-[#020202]/95 border border-[#00f3ff]/30 backdrop-blur-md rounded-lg shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-6 right-6 z-[150] w-80 sm:w-96 bg-[#050505]/95 border border-[#3ee6d9]/30 backdrop-blur-md rounded-lg shadow-2xl flex flex-col overflow-hidden"
             style={{ maxHeight: '80vh', height: '500px' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[#00f3ff]/20 bg-black/50">
+            <div className="flex items-center justify-between p-4 border-b border-[#3ee6d9]/20 bg-black/50">
               <div className="flex items-center gap-2">
-                <Terminal className="text-[#00f3ff]" size={18} />
-                <span className="font-orbitron text-xs text-[#00f3ff] uppercase tracking-widest">
+                <Terminal className="text-[#3ee6d9]" size={18} />
+                <span className="font-orbitron text-xs text-[#3ee6d9] uppercase tracking-widest">
                   Agent.Sumit_v2.0
                 </span>
               </div>
-              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-[#ff00ff] transition-colors">
+              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-[#f5c26b] transition-colors">
                 <X size={18} />
               </button>
             </div>
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-black/40">
+            <div data-lenis-prevent className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-black/40">
               <div className="flex flex-col gap-4">
                 {messages.map((msg, i) => (
                   <motion.div
@@ -115,11 +120,11 @@ export const AgentSumit = () => {
                   >
                     <div className={`max-w-[85%] rounded-md p-3 font-inter text-sm ${
                       msg.role === 'user' 
-                        ? 'bg-[#00f3ff]/20 border border-[#00f3ff]/50 text-white' 
+                        ? 'bg-[#3ee6d9]/20 border border-[#3ee6d9]/50 text-white' 
                         : 'bg-white/5 border border-white/10 text-gray-300'
                     }`}>
                       {msg.role === 'agent' && (
-                        <span className="text-[#00f3ff] font-orbitron text-[10px] block mb-1 tracking-widest">
+                        <span className="text-[#3ee6d9] font-orbitron text-[10px] block mb-1 tracking-widest">
                           &gt; SYSTEM
                         </span>
                       )}
@@ -132,8 +137,8 @@ export const AgentSumit = () => {
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSend} className="p-4 border-t border-[#00f3ff]/20 bg-black/60 flex gap-2">
-              <span className="text-[#ff00ff] font-orbitron mt-2">$</span>
+            <form onSubmit={handleSend} className="p-4 border-t border-[#3ee6d9]/20 bg-black/60 flex gap-2">
+              <span className="text-[#f5c26b] font-orbitron mt-2">$</span>
               <input
                 type="text"
                 value={input}
@@ -143,7 +148,7 @@ export const AgentSumit = () => {
               />
               <button 
                 type="submit" 
-                className="text-[#00f3ff] hover:text-white transition-colors disabled:opacity-50"
+                className="text-[#3ee6d9] hover:text-white transition-colors disabled:opacity-50"
                 disabled={!input.trim()}
               >
                 <Send size={18} />

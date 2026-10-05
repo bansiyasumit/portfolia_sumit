@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
-import { Inter, Orbitron, JetBrains_Mono } from "next/font/google";
+import { Inter, Anton, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/Navigation";
-import { NeonCursor } from "@/components/NeonCursor";
-import { FloatingIcons } from "@/components/FloatingIcons";
-import { ScrollRail } from "@/components/ScrollRail";
+import { FilmCursor } from "@/components/FilmCursor";
+import { FilmOverlay } from "@/components/FilmOverlay";
+import { Preloader } from "@/components/Preloader";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const orbitron = Orbitron({ subsets: ["latin"], variable: "--font-orbitron" });
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const inter = Inter({ subsets: ["latin"], variable: "--nf-inter" });
+const anton = Anton({ subsets: ["latin"], weight: "400", variable: "--nf-anton" });
+const instrument = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--nf-instrument",
+});
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--nf-mono" });
 
 const SITE_URL = "https://portfolia-sumit.vercel.app";
 
@@ -87,23 +94,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${anton.variable} ${instrument.variable} ${jetbrainsMono.variable}`}
+    >
       <body
         suppressHydrationWarning
-        className={`${inter.variable} ${orbitron.variable} ${jetbrainsMono.variable} antialiased bg-[#020202] text-white custom-scrollbar`}
+        className="antialiased bg-ink text-paper custom-scrollbar"
       >
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
-        <NeonCursor />
-        <FloatingIcons />
+        <Preloader />
+        <SmoothScroll />
+        <FilmCursor />
+        <FilmOverlay />
         <Navigation />
-        <ScrollRail />
-        <main className="relative z-10 w-full overflow-hidden">
-          {children}
-        </main>
+        <main className="relative z-10 w-full">{children}</main>
       </body>
     </html>
   );

@@ -1,75 +1,117 @@
 "use client";
 
-import { Cpu, Terminal, Zap } from "lucide-react";
-import { Reveal } from "./Reveal";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { OPEN_AGENT_EVENT } from "@/lib/film";
+import { SceneHeader } from "./SceneHeader";
 
-export const OPEN_AGENT_EVENT = "agent-sumit:open";
+const QUESTIONS = [
+  "What is Seg-CycleGAN and why does it matter?",
+  "How did you cut RAG latency from 4.2s to 0.9s?",
+  "Walk me through your agent crew.",
+  "What's your origin story? /lore",
+];
+
+const openAgent = (prompt?: string) =>
+  window.dispatchEvent(new CustomEvent(OPEN_AGENT_EVENT, { detail: { prompt } }));
+
+/** Typewriter loop through sample questions inside the "interrogation room" monitor. */
+const useTypewriter = (lines: string[]) => {
+  const [text, setText] = useState("");
+  useEffect(() => {
+    let line = 0, char = 0, deleting = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const step = () => {
+      const current = lines[line];
+      if (!deleting) {
+        char++;
+        setText(current.slice(0, char));
+        if (char === current.length) {
+          deleting = true;
+          timer = setTimeout(step, 1800);
+          return;
+        }
+      } else {
+        char--;
+        setText(current.slice(0, char));
+        if (char === 0) {
+          deleting = false;
+          line = (line + 1) % lines.length;
+        }
+      }
+      timer = setTimeout(step, deleting ? 22 : 45);
+    };
+    timer = setTimeout(step, 600);
+    return () => clearTimeout(timer);
+  }, [lines]);
+  return text;
+};
 
 export const AgentSection = () => {
-  const openAgent = () => {
-    window.dispatchEvent(new Event(OPEN_AGENT_EVENT));
-  };
+  const typed = useTypewriter(QUESTIONS);
 
   return (
-    <section id="agent" className="scroll-mt-24 relative">
-      <Reveal>
-        <div className="flex items-center gap-4 mb-3">
-          <span className="font-orbitron text-[#00f3ff] text-xs tracking-[0.3em] uppercase">Chapter 03</span>
-          <div className="h-px flex-1 bg-gradient-to-r from-[#00f3ff]/40 to-transparent" />
-        </div>
-        <h2 className="text-3xl md:text-5xl font-black font-orbitron mb-10 text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-600 uppercase tracking-tighter">
-          Talk to Agent Sumit
-        </h2>
-      </Reveal>
+    <section id="agent" className="relative py-28 md:py-40">
+      <div className="max-w-[1400px] mx-auto px-5 md:px-10">
+        <SceneHeader
+          number={5}
+          slug="Int. Interrogation room — live"
+          title="Interview"
+          accent="my AI twin"
+          intro="Skip the résumé. A Groq-powered model that knows my research, projects and story answers in real time, in my voice."
+        />
 
-      <Reveal delay={0.1}>
-        <div className="glass-panel rounded-lg p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
-            backgroundImage: "linear-gradient(#00f3ff 1px, transparent 1px), linear-gradient(90deg, #00f3ff 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }} />
-
-          <div className="relative flex-1">
-            <p className="text-gray-300 font-inter text-lg leading-relaxed mb-6 max-w-xl">
-              Rather than reading a static bio, ask a Groq-backed language model trained on my
-              projects, skills, and career history directly. Query the research, the RAG systems,
-              or the origin story — it answers in real time, in character.
-            </p>
-            <div className="flex flex-wrap gap-3 mb-8">
-              {["/bio", "/projects", "/lore", "/credits"].map((cmd) => (
-                <span
-                  key={cmd}
-                  className="font-orbitron text-xs text-[#00f3ff] border border-[#00f3ff]/30 px-3 py-1.5 rounded-sm bg-[#00f3ff]/5"
-                >
-                  {cmd}
-                </span>
-              ))}
-            </div>
-            <button
-              onClick={openAgent}
-              className="group relative inline-flex items-center gap-3 px-6 py-3 font-orbitron text-sm uppercase tracking-widest overflow-hidden"
-            >
-              <span className="relative z-10 text-white group-hover:text-[#020202] transition-colors duration-300 flex items-center gap-2">
-                <Terminal size={16} />
-                Initialize Terminal
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Monitor */}
+          <motion.button
+            onClick={() => openAgent()}
+            data-cursor="ASK"
+            className="lg:col-span-3 text-left relative rounded-sm border border-paper/15 bg-ink-2 overflow-hidden min-h-[320px] md:min-h-[380px] p-6 md:p-10 flex flex-col"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div
+              className="absolute inset-0 pointer-events-none opacity-[0.06]"
+              style={{ backgroundImage: "repeating-linear-gradient(0deg, #ece8e1 0 1px, transparent 1px 4px)" }}
+            />
+            <div className="flex items-center justify-between hud text-paper/40">
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal animate-pulse" /> Agent.Sumit — online
               </span>
-              <div className="absolute inset-0 border border-[#00f3ff] transition-all duration-300" />
-              <div className="absolute inset-0 bg-[#00f3ff] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
-            </button>
-          </div>
+              <span>Groq · Llama 3.1</span>
+            </div>
+            <div className="flex-1 flex items-center">
+              <p className="font-serif italic text-3xl md:text-5xl leading-tight text-paper">
+                <span className="text-ember not-italic font-mono text-2xl md:text-3xl mr-3">&gt;</span>
+                {typed}
+                <span className="inline-block w-[0.5ch] h-[1em] align-[-0.12em] bg-ember ml-1 animate-pulse" />
+              </p>
+            </div>
+            <div className="hud text-paper/50">Click to open the terminal ↗</div>
+          </motion.button>
 
-          <div className="relative shrink-0 w-full md:w-56 flex flex-col items-center gap-4">
-            <div className="relative w-24 h-24 rounded-full border border-[#00f3ff]/40 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border border-[#00f3ff] animate-ping opacity-20" />
-              <Cpu className="text-[#00f3ff]" size={36} />
-            </div>
-            <div className="flex items-center gap-2 text-xs font-orbitron text-gray-400 uppercase tracking-widest">
-              <Zap size={12} className="text-[#ff00ff]" />
-              Groq · llama-3.1-8b
-            </div>
+          {/* Suggested prompts */}
+          <div className="lg:col-span-2 flex flex-col gap-3">
+            {QUESTIONS.map((q, i) => (
+              <motion.button
+                key={q}
+                onClick={() => openAgent(q)}
+                className="group text-left flex items-center justify-between gap-4 border border-paper/10 hover:border-ember/60 rounded-sm px-5 py-4 transition-colors"
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.6 }}
+                transition={{ duration: 0.7, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <span className="text-paper/80 group-hover:text-paper text-sm md:text-base">{q}</span>
+                <span className="text-ember group-hover:translate-x-1 transition-transform">→</span>
+              </motion.button>
+            ))}
+            <p className="hud text-paper/30 mt-2">Tip: try /bio, /lore or /credits</p>
           </div>
         </div>
-      </Reveal>
+      </div>
     </section>
   );
 };
