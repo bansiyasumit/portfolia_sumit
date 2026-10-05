@@ -262,7 +262,11 @@ export async function POST(req: Request) {
       }
 
       // gpt-oss likes non-breaking hyphens; normalise them for clean rendering.
-      const reply = (message.content ?? "").replace(/[‐‑]/g, "-").trim();
+      const reply = (message.content ?? "")
+        .replace(/【[^】]*】/g, "") // strip gpt-oss inline citation markers
+        .replace(/[‐‑]/g, "-")
+        .replace(/ +([.,;:])/g, "$1")
+        .trim();
       return NextResponse.json({ reply, steps, actions, model });
     }
 
