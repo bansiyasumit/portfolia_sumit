@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUp, Mic, Volume2, VolumeX } from "lucide-react";
 import { FILM_START_EVENT, OPEN_AGENT_EVENT, hasFilmStarted } from "@/lib/film";
-import { createRecognizer, speak, stopSpeaking } from "@/lib/voice";
+import { createRecognizer, speak, stopSpeaking, unlockAudio } from "@/lib/voice";
 import { personaState } from "./Persona";
 
 const CityScene = dynamic(() => import("./CityScene"), {
@@ -109,10 +109,12 @@ export const CityWalk = () => {
     setGreeted(true);
     const activated = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation?.hasBeenActive ?? false;
     setMuted(!activated);
+    if (activated) unlockAudio();
     say(GREETING, "wave", activated);
   }, [arrived, greeted, say]);
 
   const toggleSound = () => {
+    unlockAudio();
     const next = !muted;
     setMuted(next);
     userMuted.current = next;
@@ -131,6 +133,7 @@ export const CityWalk = () => {
   const ask = async (question: string) => {
     const q = question.trim();
     if (!q || busy) return;
+    unlockAudio();
     setInput("");
     setBusy(true);
     // Asking him something is an interaction, so he can answer out loud — unless the visitor muted him.
@@ -163,6 +166,7 @@ export const CityWalk = () => {
   const listen = () => {
     const rec = createRecognizer();
     if (!rec) return;
+    unlockAudio();
     // Speaking to the persona implies sound on.
     setMuted(false);
     stopSpeaking();

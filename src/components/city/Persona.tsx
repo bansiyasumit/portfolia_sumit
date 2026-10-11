@@ -7,14 +7,24 @@ import { voiceState } from "@/lib/voice";
 
 export type PersonaMode = "walk" | "idle" | "wave" | "talk" | "think";
 
-/** Shared, mutable director state — written by the UI, read every frame. */
-export const personaState = {
-  mode: "walk" as PersonaMode,
+type PersonaState = {
+  mode: PersonaMode;
   /** world position along the street (z); the director moves it */
-  z: -26,
+  z: number;
   /** set by the director: 0 = standing, 1 = full walking speed */
-  walkAmount: 1,
+  walkAmount: number;
 };
+
+/**
+ * Shared, mutable director state — written by the UI, read every frame.
+ * Kept on globalThis because the page UI and the lazily loaded 3D chunk can
+ * otherwise end up with separate copies of this module.
+ */
+export const personaState: PersonaState = ((globalThis as { __sbPersona?: PersonaState }).__sbPersona ??= {
+  mode: "walk",
+  z: -26,
+  walkAmount: 1,
+});
 
 // Palette taken from the profile photo.
 const C = {
@@ -190,7 +200,12 @@ export const Persona = () => {
     // ── Lip-sync from the voice engine
     voiceState.wordPulse = Math.max(0, voiceState.wordPulse - d * 5);
     const talking = voiceState.speaking;
-    const target = talking ? 0.25 + voiceState.wordPulse * 0.55 + (Math.sin(t * 17) * 0.5 + 0.5) * 0.35 : 0;
+    // Neural audio gives real loudness; otherwise synthesize plausible jaw motion.
+    const target = !talking
+      ? 0
+      : voiceState.level >= 0
+        ? Math.min(1, voiceState.level * 1.15)
+        : 0.25 + voiceState.wordPulse * 0.55 + (Math.sin(t * 17) * 0.5 + 0.5) * 0.35;
     mouthOpen.current = lerp(mouthOpen.current, target, 1 - Math.pow(0.0001, d));
     if (j.mouth.current) j.mouth.current.scale.y = 0.15 + mouthOpen.current * 1.4;
     if (j.jaw.current) j.jaw.current.rotation.x = mouthOpen.current * 0.12;

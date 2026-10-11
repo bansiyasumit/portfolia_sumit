@@ -1,18 +1,30 @@
 "use client";
 
 /**
- * Browser voice for the persona: free text-to-speech (speechSynthesis) and
- * speech-to-text (SpeechRecognition where available). Speech is split into
- * sentences so subtitles stay in sync and Chrome's ~15s utterance cut-off
- * never triggers.
+ * Voice for the 3D persona.
+ *
+ * 1. Neural voice (Groq Orpheus via /api/tts), played through Web Audio so the
+ *    mouth follows the real loudness of the speech. Chunks are pre-fetched one
+ *    ahead, so there are no gaps between sentences.
+ * 2. Fallback: the browser's own speech synthesis, preferring natural/neural
+ *    voices (Edge "Online (Natural)", Google voices) over robotic desktop ones.
+ * 3. Muted: subtitles and lip movement only.
  */
 
-/** Live lip-sync signal read by the 3D persona every frame. */
-export const voiceState = {
-  speaking: false,
-  /** 0..1 pulse, bumped on each spoken word and decayed by the renderer */
-  wordPulse: 0,
+type VoiceState = {
+  speaking: boolean;
+  /** 0..1 pulse bumped on each spoken word (browser voice) and decayed by the renderer */
+  wordPulse: number;
+  /** 0..1 loudness of the playing neural audio, or -1 when not available */
+  level: number;
 };
+
+/** Live lip-sync signal read by the 3D persona every frame (global singleton, see Persona.tsx). */
+export const voiceState: VoiceState = ((globalThis as { __sbVoice?: VoiceState }).__sbVoice ??= {
+  speaking: false,
+  wordPulse: 0,
+  level: -1,
+});
 
 export const stripMarkdown = (md: string) =>
   md
@@ -39,64 +51,187 @@ export const splitSentences = (text: string) => {
   return out.map((s) => s.trim()).filter(Boolean);
 };
 
-// Prefer an Indian-English male voice, then any natural-sounding English male voice.
-const VOICE_PREFERENCES = [/prabhat/i, /ravi/i, /en-IN/i, /google uk english male/i, /guy|ryan|david|daniel|george/i, /en-GB/i, /en-US/i, /^en/i];
+/** Group sentences into chunks of up to ~maxChars so speech flows naturally. */
+const chunk = (sentences: string[], maxChars: number) => {
+  const out: string[] = [];
+  for (const s of sentences) {
+    const last = out[out.length - 1];
+    if (last && last.length + s.length + 1 <= maxChars) out[out.length - 1] = `${last} ${s}`;
+    else out.push(s);
+  }
+  return out;
+};
+
+// ───────────────────────── Neural voice (Web Audio) ─────────────────────────
+
+let ctx: AudioContext | null = null;
+let analyser: AnalyserNode | null = null;
+let neuralAvailable = true; // flips off after the first failure so we stop trying
+
+const getContext = () => {
+  if (typeof window === "undefined") return null;
+  if (!ctx) {
+    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return null;
+    ctx = new Ctor();
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.6;
+    analyser.connect(ctx.destination);
+  }
+  return ctx;
+};
+
+/** Call from a click/tap handler: browsers only allow audio after a gesture. */
+export const unlockAudio = () => {
+  const c = getContext();
+  if (c && c.state === "suspended") c.resume().catch(() => {});
+};
+
+const fetchAudio = async (text: string, signal?: AbortSignal): Promise<AudioBuffer | null> => {
+  const c = getContext();
+  if (!c || !neuralAvailable) return null;
+  try {
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+      signal,
+    });
+    if (!res.ok) {
+      if (res.status === 503) neuralAvailable = false;
+      return null;
+    }
+    return await c.decodeAudioData(await res.arrayBuffer());
+  } catch {
+    return null;
+  }
+};
+
+let currentSource: AudioBufferSourceNode | null = null;
+
+const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal) =>
+  new Promise<void>((resolve) => {
+    const c = getContext()!;
+    const src = c.createBufferSource();
+    src.buffer = buffer;
+    src.connect(analyser!);
+    currentSource = src;
+    const data = new Uint8Array(analyser!.fftSize);
+    let raf = 0;
+
+    const meter = () => {
+      analyser!.getByteTimeDomainData(data);
+      let sum = 0;
+      for (let i = 0; i < data.length; i++) {
+        const v = (data[i] - 128) / 128;
+        sum += v * v;
+      }
+      voiceState.level = Math.min(1, Math.sqrt(sum / data.length) * 5.5);
+      raf = requestAnimationFrame(meter);
+    };
+
+    const finish = () => {
+      cancelAnimationFrame(raf);
+      voiceState.level = 0;
+      if (currentSource === src) currentSource = null;
+      resolve();
+    };
+    src.onended = finish;
+    signal?.addEventListener(
+      "abort",
+      () => {
+        try {
+          src.stop();
+        } catch {}
+      },
+      { once: true }
+    );
+    voiceState.speaking = true;
+    meter();
+    src.start();
+  });
+
+// ───────────────────────── Browser voice (fallback) ─────────────────────────
+
+export const canSpeak = () => typeof window !== "undefined" && "speechSynthesis" in window;
+
+// Natural/neural voices first; robotic "Desktop" SAPI voices last.
+const VOICE_RANK: RegExp[] = [
+  /prabhat.*natural/i,
+  /(online|natural).*english \(india\)/i,
+  /(guy|ryan|andrew|brian|christopher|eric).*(online|natural)/i,
+  /(online|natural)/i,
+  /google uk english male/i,
+  /google us english/i,
+  /google.*english/i,
+  /en-IN/i,
+  /en-GB/i,
+  /en-US/i,
+];
 
 let cachedVoice: SpeechSynthesisVoice | null | undefined;
 
 const pickVoice = (): SpeechSynthesisVoice | null => {
   if (cachedVoice !== undefined) return cachedVoice;
-  const voices = window.speechSynthesis?.getVoices() ?? [];
+  const voices = (window.speechSynthesis?.getVoices() ?? []).filter((v) => v.lang.toLowerCase().startsWith("en"));
   if (!voices.length) return null;
-  for (const pref of VOICE_PREFERENCES) {
-    const v = voices.find((x) => pref.test(x.name) || pref.test(x.lang));
+  for (const rx of VOICE_RANK) {
+    const v = voices.find((x) => rx.test(`${x.name} ${x.lang}`));
     if (v) return (cachedVoice = v);
   }
   return (cachedVoice = voices[0]);
 };
 
-export const canSpeak = () => typeof window !== "undefined" && "speechSynthesis" in window;
+if (typeof window !== "undefined" && canSpeak()) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    cachedVoice = undefined;
+  };
+}
 
-export type SpeakOptions = {
-  muted: boolean;
-  onSentence?: (sentence: string) => void;
-  signal?: AbortSignal;
-};
-
-/** Rough spoken duration for muted playback, so subtitles and the mouth still move. */
-const estimateMs = (s: string) => Math.max(1400, s.split(/\s+/).length * 330);
-
-const speakSentence = (sentence: string, muted: boolean, signal?: AbortSignal) =>
+/** Speak one chunk with the browser voice; switches subtitles at sentence boundaries. */
+const browserSpeak = (text: string, sentences: string[], onSentence: (s: string) => void, signal?: AbortSignal) =>
   new Promise<void>((resolve) => {
-    if (signal?.aborted) return resolve();
-
-    if (muted || !canSpeak()) {
-      voiceState.speaking = true;
-      const words = sentence.split(/\s+/).length;
-      const per = estimateMs(sentence) / words;
-      let i = 0;
-      const tick = setInterval(() => {
-        voiceState.wordPulse = 1;
-        if (++i >= words || signal?.aborted) {
-          clearInterval(tick);
-          voiceState.speaking = false;
-          resolve();
-        }
-      }, per);
-      return;
-    }
-
-    const u = new SpeechSynthesisUtterance(sentence);
+    const u = new SpeechSynthesisUtterance(text);
     const voice = pickVoice();
     if (voice) {
       u.voice = voice;
       u.lang = voice.lang;
     }
-    u.rate = 1.0;
-    u.pitch = 0.92;
+    u.rate = 1.02;
+    u.pitch = 1;
+
+    // Character offsets where each sentence starts, for boundary-driven subtitles.
+    const starts: number[] = [];
+    let offset = 0;
+    for (const s of sentences) {
+      starts.push(text.indexOf(s, offset));
+      offset = starts[starts.length - 1] + s.length;
+    }
+    let shown = 0;
+    onSentence(sentences[0]);
+
+    // Chrome's network voices stop after ~15s unless nudged.
+    const keepAlive = setInterval(() => {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 10000);
+
     u.onstart = () => (voiceState.speaking = true);
-    u.onboundary = () => (voiceState.wordPulse = 1);
+    u.onboundary = (e) => {
+      voiceState.wordPulse = 1;
+      for (let i = starts.length - 1; i > shown; i--) {
+        if (e.charIndex >= starts[i]) {
+          shown = i;
+          onSentence(sentences[i]);
+          break;
+        }
+      }
+    };
     const done = () => {
+      clearInterval(keepAlive);
       voiceState.speaking = false;
       resolve();
     };
@@ -106,29 +241,87 @@ const speakSentence = (sentence: string, muted: boolean, signal?: AbortSignal) =
     window.speechSynthesis.speak(u);
   });
 
-/** Speak text sentence by sentence; resolves when finished or aborted. */
-export const speak = async (text: string, { muted, onSentence, signal }: SpeakOptions) => {
-  if (canSpeak()) window.speechSynthesis.cancel();
-  for (const sentence of splitSentences(stripMarkdown(text))) {
-    if (signal?.aborted) break;
-    onSentence?.(sentence);
-    await speakSentence(sentence, muted, signal);
-    await new Promise((r) => setTimeout(r, 120));
+/** Muted playback: timed subtitles and lip movement, no audio. */
+const silentSpeak = (sentence: string, signal?: AbortSignal) =>
+  new Promise<void>((resolve) => {
+    voiceState.speaking = true;
+    const words = sentence.split(/\s+/).length;
+    const per = Math.max(1400, words * 330) / words;
+    let i = 0;
+    const tick = setInterval(() => {
+      voiceState.wordPulse = 1;
+      if (++i >= words || signal?.aborted) {
+        clearInterval(tick);
+        voiceState.speaking = false;
+        resolve();
+      }
+    }, per);
+  });
+
+// ───────────────────────── Public API ─────────────────────────
+
+export type SpeakOptions = {
+  muted: boolean;
+  onSentence?: (sentence: string) => void;
+  signal?: AbortSignal;
+};
+
+export const speak = async (text: string, { muted, onSentence = () => {}, signal }: SpeakOptions) => {
+  stopSpeaking();
+  const sentences = splitSentences(stripMarkdown(text));
+  if (!sentences.length) return;
+
+  try {
+    if (muted) {
+      for (const s of sentences) {
+        if (signal?.aborted) break;
+        onSentence(s);
+        await silentSpeak(s, signal);
+      }
+      return;
+    }
+
+    // Neural voice: fetch chunk N+1 while chunk N plays.
+    const neuralChunks = chunk(sentences, 220);
+    let next = neuralAvailable ? fetchAudio(neuralChunks[0], signal) : Promise.resolve(null);
+    for (let i = 0; i < neuralChunks.length; i++) {
+      const buffer = await next;
+      if (signal?.aborted) return;
+      if (!buffer) {
+        // Neural voice unavailable — speak the rest with the browser voice.
+        const rest = neuralChunks.slice(i).join(" ");
+        if (canSpeak()) {
+          for (const c of chunk(splitSentences(rest), 240)) {
+            if (signal?.aborted) return;
+            await browserSpeak(c, splitSentences(c), onSentence, signal);
+          }
+        } else {
+          for (const s of splitSentences(rest)) {
+            onSentence(s);
+            await silentSpeak(s, signal);
+          }
+        }
+        return;
+      }
+      next = i + 1 < neuralChunks.length ? fetchAudio(neuralChunks[i + 1], signal) : Promise.resolve(null);
+      onSentence(neuralChunks[i]);
+      await playBuffer(buffer, signal);
+    }
+  } finally {
+    voiceState.speaking = false;
+    voiceState.level = -1;
   }
-  voiceState.speaking = false;
 };
 
 export const stopSpeaking = () => {
   if (canSpeak()) window.speechSynthesis.cancel();
+  try {
+    currentSource?.stop();
+  } catch {}
+  currentSource = null;
   voiceState.speaking = false;
+  voiceState.level = -1;
 };
-
-// Voices load asynchronously in Chrome.
-if (typeof window !== "undefined" && canSpeak()) {
-  window.speechSynthesis.onvoiceschanged = () => {
-    cachedVoice = undefined;
-  };
-}
 
 type Recognition = {
   lang: string;

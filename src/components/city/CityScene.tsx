@@ -48,11 +48,16 @@ const Director = ({ play, scroll, skipWalk, onArrive }: DirectorProps) => {
 
     // ── Walk timeline: cruise, then brake onto the mark
     if (!skipWalk && started.current !== null && !arrived.current) {
+      // Position is a closed-form function of elapsed time, so he always lands
+      // exactly on the mark even when the frame rate is low or uneven.
       const e = state.clock.elapsedTime - started.current;
-      const speed = e < CRUISE_SECONDS ? WALK_SPEED : WALK_SPEED * Math.max(0, 1 - (e - CRUISE_SECONDS) / BRAKE_SECONDS);
-      personaState.z = Math.min(0, personaState.z + speed * d);
+      const eb = Math.min(Math.max(e - CRUISE_SECONDS, 0), BRAKE_SECONDS);
+      const speed = e < CRUISE_SECONDS ? WALK_SPEED : WALK_SPEED * (1 - eb / BRAKE_SECONDS);
+      personaState.z =
+        START_Z + WALK_SPEED * Math.min(e, CRUISE_SECONDS) + WALK_SPEED * (eb - (eb * eb) / (2 * BRAKE_SECONDS));
       personaState.walkAmount = speed / WALK_SPEED;
-      if (speed === 0 || personaState.z >= 0) {
+      if (eb >= BRAKE_SECONDS) {
+        personaState.z = 0;
         arrived.current = true;
         personaState.walkAmount = 0;
         personaState.mode = "idle";
@@ -74,8 +79,8 @@ const Director = ({ play, scroll, skipWalk, onArrive }: DirectorProps) => {
     const hand = 0.012;
     const camTarget = walking
       ? new THREE.Vector3(0.9, 1.45, z + (portrait ? 5.4 : 4.2))
-      : new THREE.Vector3(portrait ? 0.15 : 0.55, 1.6, portrait ? 3.6 : 2.35);
-    const lookTarget = walking ? new THREE.Vector3(0, 1.35, z) : new THREE.Vector3(portrait ? 0 : -0.25, portrait ? 1.45 : 1.52, 0);
+      : new THREE.Vector3(portrait ? 0.15 : 0.55, 1.6, z + (portrait ? 3.6 : 2.35));
+    const lookTarget = walking ? new THREE.Vector3(0, 1.35, z) : new THREE.Vector3(portrait ? 0 : -0.25, portrait ? 1.45 : 1.52, z);
 
     // Scroll: crane up into the night sky.
     const s = scroll.get();
