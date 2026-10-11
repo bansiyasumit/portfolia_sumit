@@ -1,3 +1,4 @@
+import { CityWalk } from "@/components/city/CityWalk";
 import { Hero } from "@/components/hero/Hero";
 import { OriginSection } from "@/components/OriginSection";
 import { WorkReel } from "@/components/WorkReel";
@@ -8,6 +9,7 @@ import { CreditsSection } from "@/components/CreditsSection";
 export default function Home() {
   return (
     <>
+      <CityWalk />
       <Hero />
       <OriginSection />
       <WorkReel />

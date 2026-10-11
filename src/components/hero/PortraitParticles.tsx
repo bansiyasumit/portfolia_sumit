@@ -232,11 +232,13 @@ const PortraitPoints = ({ data, scatter, pointer, reducedMotion }: SceneProps) =
     material.dispose();
   }, [geometry, material]);
 
-  // Begin "denoising" once the opening leader has lifted.
+  // Begin "denoising" once the intro has lifted — and only when the canvas is
+  // actually rendering (in view), so visitors arriving from the cold open see it form.
+  const filmStarted = useRef(false);
   useEffect(() => {
     if (reducedMotion) return;
     const begin = () => {
-      if (startRef.current === null) startRef.current = performance.now();
+      filmStarted.current = true;
     };
     if (hasFilmStarted()) begin();
     window.addEventListener(FILM_START_EVENT, begin);
@@ -257,6 +259,7 @@ const PortraitPoints = ({ data, scatter, pointer, reducedMotion }: SceneProps) =
     const scale = wide ? 1 : Math.min(0.8, (vw * 0.92) / PORTRAIT_WORLD_SIZE);
     u.uSize.value = (data.spacing * scale * 1.35 * size.height) / (2 * Math.tan(THREE.MathUtils.degToRad(FOV / 2)));
 
+    if (filmStarted.current && startRef.current === null) startRef.current = performance.now();
     if (startRef.current !== null) {
       const elapsed = (performance.now() - startRef.current) / 1000;
       u.uAssemble.value = Math.min(1, elapsed / ASSEMBLE_SECONDS);

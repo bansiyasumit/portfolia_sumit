@@ -27,8 +27,9 @@ const MaskLine = ({ children, delay, play, className }: { children: React.ReactN
 
 export const Hero = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const [filmStarted, setFilmStarted] = useState(false);
+  const [inView, setInView] = useState(false);
   const [play, setPlay] = useState(false);
-  const [inView, setInView] = useState(true);
   const [particleCount, setParticleCount] = useState<number | null>(null);
   const achievement = profileData.achievements?.[0];
 
@@ -45,7 +46,7 @@ export const Hero = () => {
   const barHeight = useTransform(scrollYProgress, [0, 0.3], ["0vh", "9vh"]);
 
   useEffect(() => {
-    const start = () => setPlay(true);
+    const start = () => setFilmStarted(true);
     if (hasFilmStarted()) start();
     window.addEventListener(FILM_START_EVENT, start);
     return () => window.removeEventListener(FILM_START_EVENT, start);
@@ -58,6 +59,11 @@ export const Hero = () => {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  // The title card plays the first time the hero comes into view after the intro.
+  useEffect(() => {
+    if (filmStarted && inView) setPlay(true);
+  }, [filmStarted, inView]);
 
   return (
     <section id="home" data-scene="Opening" ref={sectionRef} className="relative h-[260vh]">
