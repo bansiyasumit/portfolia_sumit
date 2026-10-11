@@ -4,9 +4,11 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
-import { ArrowUp, Mic, Volume2, VolumeX } from "lucide-react";
-import { FILM_START_EVENT, OPEN_AGENT_EVENT, hasFilmStarted } from "@/lib/film";
-import { createRecognizer, speak, stopSpeaking, unlockAudio } from "@/lib/voice";
+import { ArrowUp, Mic, Square, Volume2, VolumeX } from "lucide-react";
+import { FILM_START_EVENT, OPEN_AGENT_EVENT, hasFilmStarted, setSoundPreferred, soundPreferred } from "@/lib/film";
+import { canRecord, playClip, recordSpeech, speak, stopSpeaking, transcribe, unlockAudio } from "@/lib/voice";
+import { braam, hit, impact, riser, setSfxEnabled, whoosh } from "@/lib/sfx";
+import voiceLines from "@/data/voiceLines.json";
 import { personaState } from "./Persona";
 
 const CityScene = dynamic(() => import("./CityScene"), {
@@ -18,17 +20,16 @@ const CityScene = dynamic(() => import("./CityScene"), {
   ),
 });
 
-const GREETING =
-  "Hey, I'm Sumit. Welcome to my portfolio. I'm an AI researcher at NIT Jalandhar, building generative models for medical imaging. Ask me anything, or scroll down and watch the film.";
-
 const CHIPS = ["What's your thesis about?", "What are you best at?", "Show me your projects"];
 
 type Turn = { role: "user" | "agent"; content: string };
+type Card = { key: string; text: string; kind: "title" | "card" };
 
 /**
- * Cold open: Sumit's 3D persona walks down a neon street toward the camera,
- * stops, waves and introduces himself — then visitors can ask questions by
- * typing or speaking, and he answers out loud with lip-sync and subtitles.
+ * Cold open, trailer-style: a narrator sets the scene, a comet falls on the
+ * street, Sumit's persona lands superhero-style, rises with glowing eyes and
+ * walks to camera between title-card slams — then greets the visitor, who can
+ * talk to him by voice (Whisper) or text and hear him answer.
  */
 export const CityWalk = () => {
   const router = useRouter();
@@ -36,28 +37,39 @@ export const CityWalk = () => {
   const [play, setPlay] = useState(false);
   const [inView, setInView] = useState(true);
   const [arrived, setArrived] = useState(false);
-  const [skipWalk, setSkipWalk] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const [skip, setSkip] = useState(0);
   const [muted, setMuted] = useState(true);
+  const [narration, setNarration] = useState("");
   const [subtitle, setSubtitle] = useState("");
+  const [card, setCard] = useState<Card | null>(null);
+  const [flash, setFlash] = useState(0);
   const [busy, setBusy] = useState(false);
   const [input, setInput] = useState("");
   const [listening, setListening] = useState(false);
+  const [micLevel, setMicLevel] = useState(0);
   const [canListen, setCanListen] = useState(false);
-  const [greeted, setGreeted] = useState(false);
   const history = useRef<Turn[]>([]);
-  const userMuted = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
+  const userMuted = useRef(false);
+  const recorderRef = useRef<{ stop: () => void } | null>(null);
+  const mutedRef = useRef(true);
+  mutedRef.current = muted;
 
   const { scrollYProgress: raw } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
   const scroll = useTransform(raw, (v) => v); // plain JS mapping (no native scroll-timeline acceleration)
   const uiOpacity = useTransform(scroll, [0, 0.2], [1, 0]);
-  // Crane + fade complete while the scene is still pinned.
   const fade = useTransform(scroll, [0.62, 0.98], [0, 1]);
 
   useEffect(() => {
-    setSkipWalk(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-    setCanListen(!!createRecognizer());
-    const start = () => setPlay(true);
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    setCanListen(canRecord());
+    const start = () => {
+      const withSound = soundPreferred();
+      setMuted(!withSound);
+      setSfxEnabled(withSound);
+      setPlay(true);
+    };
     if (hasFilmStarted()) start();
     window.addEventListener(FILM_START_EVENT, start);
     return () => window.removeEventListener(FILM_START_EVENT, start);
@@ -75,51 +87,109 @@ export const CityWalk = () => {
   useEffect(() => {
     if (!inView) {
       abortRef.current?.abort();
+      recorderRef.current?.stop();
       stopSpeaking();
       setSubtitle("");
     }
   }, [inView]);
 
-  const say = useCallback(async (text: string, mode: "talk" | "wave", soundOn: boolean) => {
+  const newSignal = () => {
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
-    personaState.mode = mode;
+    return ctrl;
+  };
+
+  const finishTalking = (ctrl: AbortController) => {
+    if (ctrl.signal.aborted) return;
+    personaState.mode = "idle";
+    setTimeout(() => !ctrl.signal.aborted && setSubtitle(""), 1600);
+  };
+
+  const greet = useCallback(async () => {
+    const ctrl = newSignal();
+    personaState.mode = "wave";
     let first = true;
-    await speak(text, {
-      muted: !soundOn,
+    await playClip("/voice/greeting.wav", voiceLines.greeting.text, {
+      muted: mutedRef.current,
       signal: ctrl.signal,
       onSentence: (s) => {
         setSubtitle(s);
-        if (!first && mode === "wave") personaState.mode = "talk";
+        if (!first) personaState.mode = "talk";
         first = false;
       },
     });
-    if (!ctrl.signal.aborted) {
-      personaState.mode = "idle";
-      setTimeout(() => !ctrl.signal.aborted && setSubtitle(""), 1600);
-    }
+    finishTalking(ctrl);
   }, []);
 
-  const onArrive = useCallback(() => setArrived(true), []);
+  const showCard = (c: Card, ms: number) => {
+    setCard(c);
+    setTimeout(() => setCard((cur) => (cur?.key === c.key ? null : cur)), ms);
+  };
 
-  // Greet once on arrival. Browsers only allow audio after the visitor has interacted.
-  useEffect(() => {
-    if (!arrived || greeted) return;
-    setGreeted(true);
-    const activated = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation?.hasBeenActive ?? false;
-    setMuted(!activated);
-    if (activated) unlockAudio();
-    say(GREETING, "wave", activated);
-  }, [arrived, greeted, say]);
+  const narrate = (key: "vo-world" | "vo-one") => {
+    const line = voiceLines[key];
+    setNarration(line.text);
+    playClip(`/voice/${key}.wav`, line.text, { muted: mutedRef.current, narrator: true }).then(() =>
+      setTimeout(() => setNarration((n) => (n === line.text ? "" : n)), 500)
+    );
+  };
+
+  // Trailer beats fired by the 3D director.
+  const onBeat = useCallback(
+    (beat: string) => {
+      switch (beat) {
+        case "vo1":
+          narrate("vo-world");
+          break;
+        case "vo2":
+          narrate("vo-one");
+          break;
+        case "riser":
+          riser(2.3);
+          break;
+        case "whoosh":
+          whoosh(0.8);
+          break;
+        case "impact":
+          impact();
+          setFlash((f) => f + 1);
+          break;
+        case "braam":
+          braam(3);
+          break;
+        case "title":
+          showCard({ key: "title", text: "Sumit Bansiya", kind: "title" }, 1500);
+          break;
+        case "card1":
+          hit();
+          showCard({ key: "c1", text: "AI Researcher", kind: "card" }, 950);
+          break;
+        case "card2":
+          hit();
+          showCard({ key: "c2", text: "IndiaAI Fellow", kind: "card" }, 1100);
+          break;
+        case "arrive":
+          setNarration("");
+          setArrived(true);
+          greet();
+          break;
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [greet]
+  );
 
   const toggleSound = () => {
     unlockAudio();
     const next = !muted;
     setMuted(next);
+    mutedRef.current = next;
     userMuted.current = next;
-    if (!next && !busy) say(GREETING, "wave", true);
+    setSoundPreferred(!next);
+    setSfxEnabled(!next);
     if (next) stopSpeaking();
+    else if (arrived && !busy) greet();
   };
 
   const runActions = (actions: { type: string; href: string }[] = []) => {
@@ -134,17 +204,22 @@ export const CityWalk = () => {
     const q = question.trim();
     if (!q || busy) return;
     unlockAudio();
+    // Asking him something is an interaction, so he answers out loud — unless the visitor muted him.
+    const soundOn = !userMuted.current;
+    if (soundOn) {
+      setMuted(false);
+      mutedRef.current = false;
+    }
     setInput("");
     setBusy(true);
-    // Asking him something is an interaction, so he can answer out loud — unless the visitor muted him.
-    const soundOn = !userMuted.current;
-    if (soundOn) setMuted(false);
-    abortRef.current?.abort();
+    const ctrl = newSignal();
     stopSpeaking();
     setSubtitle(`“${q}”`);
     personaState.mode = "think";
     history.current = [...history.current, { role: "user" as const, content: q }].slice(-8);
 
+    let reply = "";
+    let actions: { type: string; href: string }[] = [];
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -152,54 +227,86 @@ export const CityWalk = () => {
         body: JSON.stringify({ mode: "voice", messages: history.current }),
       });
       const data = await res.json();
-      const reply: string = data.reply || data.error || "Sorry, I lost my train of thought. Try again?";
-      history.current = [...history.current, { role: "agent" as const, content: reply }];
-      setBusy(false);
-      await say(reply, "talk", soundOn);
-      runActions(data.actions);
+      reply = data.reply || data.error || "Sorry, I lost my train of thought. Try again?";
+      actions = data.actions ?? [];
     } catch {
-      setBusy(false);
-      await say("I can't reach my brain right now. Please try again in a moment.", "talk", soundOn);
+      reply = "I can't reach my brain right now. Please try again in a moment.";
+    }
+    history.current = [...history.current, { role: "agent" as const, content: reply }];
+    setBusy(false);
+    if (ctrl.signal.aborted) return;
+    personaState.mode = "talk";
+    await speak(reply, { muted: !soundOn, signal: ctrl.signal, onSentence: setSubtitle });
+    finishTalking(ctrl);
+    runActions(actions);
+  };
+
+  const listen = async () => {
+    if (listening) {
+      recorderRef.current?.stop();
+      return;
+    }
+    unlockAudio();
+    abortRef.current?.abort();
+    stopSpeaking();
+    userMuted.current = false; // speaking to him implies wanting to hear him
+    setListening(true);
+    setSubtitle("Listening… speak now");
+    personaState.mode = "idle";
+    try {
+      const rec = recordSpeech({ onLevel: setMicLevel });
+      recorderRef.current = rec;
+      const audio = await rec.promise;
+      setListening(false);
+      setMicLevel(0);
+      if (!audio) {
+        setSubtitle("I didn't catch that — tap the mic and try again.");
+        return;
+      }
+      setSubtitle("Transcribing…");
+      const text = await transcribe(audio);
+      if (text) ask(text);
+      else setSubtitle("I didn't catch that — tap the mic and try again.");
+    } catch (err) {
+      setListening(false);
+      setMicLevel(0);
+      const denied = err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "SecurityError");
+      setSubtitle(denied ? "Microphone access is blocked — allow it in the address bar, or type instead." : "Voice input failed — try typing instead.");
+    } finally {
+      recorderRef.current = null;
     }
   };
 
-  const listen = () => {
-    const rec = createRecognizer();
-    if (!rec) return;
-    unlockAudio();
-    // Speaking to the persona implies sound on.
-    setMuted(false);
-    stopSpeaking();
-    setListening(true);
-    setSubtitle("Listening…");
-    rec.onresult = (e) => {
-      const text = e.results[0]?.[0]?.transcript ?? "";
-      setListening(false);
-      if (text) ask(text);
-    };
-    rec.onerror = () => {
-      setListening(false);
-      setSubtitle("I couldn't hear that — try typing instead.");
-    };
-    rec.onend = () => setListening(false);
-    rec.start();
-  };
+  const trailerRunning = play && !arrived;
 
   return (
     <section id="intro" ref={sectionRef} data-scene="Cold open" className="relative h-[190vh]">
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-ink">
         <div className="absolute inset-0">
-          <CityScene play={play} active={inView} scroll={scroll} skipWalk={skipWalk} onArrive={onArrive} />
+          <CityScene play={play} active={inView} scroll={scroll} skip={skip} reduced={reduced} onBeat={onBeat} />
         </div>
 
-        {/* Letterbox */}
-        <div className="absolute top-0 inset-x-0 h-[7vh] bg-ink z-10 pointer-events-none" />
-        <div className="absolute bottom-0 inset-x-0 h-[7vh] bg-ink z-10 pointer-events-none" />
+        {/* Impact flash */}
+        <AnimatePresence>
+          {flash > 0 && (
+            <motion.div
+              key={flash}
+              className="absolute inset-0 z-[15] bg-[#e9fffd] pointer-events-none mix-blend-screen"
+              initial={{ opacity: 0.85 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Letterbox: wide 2.39:1 during the trailer, opens up when he arrives */}
+        <motion.div className="absolute top-0 inset-x-0 bg-ink z-10 pointer-events-none" animate={{ height: trailerRunning ? "12vh" : "7vh" }} transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }} />
+        <motion.div className="absolute bottom-0 inset-x-0 bg-ink z-10 pointer-events-none" animate={{ height: trailerRunning ? "12vh" : "7vh" }} transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }} />
 
         <motion.div className="absolute inset-0 z-20 pointer-events-none" style={{ opacity: uiOpacity }}>
           {/* Slug line */}
           <motion.div
-            className="absolute top-[10vh] left-5 md:left-10 hud text-paper/60"
+            className="absolute top-[13vh] left-5 md:left-10 hud text-paper/60"
             initial={{ opacity: 0 }}
             animate={play ? { opacity: 1 } : {}}
             transition={{ delay: 0.4, duration: 1.2 }}
@@ -207,22 +314,47 @@ export const CityWalk = () => {
             Scene 00 · <span className="text-paper/85">Ext. Latent Street — night</span>
           </motion.div>
 
-          {/* Title card while he walks in */}
-          <AnimatePresence>
-            {play && !arrived && (
-              <motion.div
-                className="absolute left-5 md:left-10 bottom-[16vh] max-w-md"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10, transition: { duration: 0.5 } }}
-                transition={{ delay: 1, duration: 1.2 }}
-              >
-                <div className="hud text-ember mb-3">Now walking in</div>
-                <div className="font-display uppercase text-5xl md:text-7xl leading-[0.9]">Sumit Bansiya</div>
-                <div className="font-serif italic text-xl md:text-2xl text-paper/70 mt-2">AI researcher · IndiaAI Fellow</div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Narrator */}
+          <div className="absolute inset-x-0 top-[38%] flex justify-center px-6">
+            <AnimatePresence mode="wait">
+              {narration && (
+                <motion.p
+                  key={narration}
+                  className="font-serif italic text-center text-3xl md:text-6xl text-paper/90 max-w-4xl [text-shadow:0_4px_30px_rgba(0,0,0,0.9)]"
+                  initial={{ opacity: 0, filter: "blur(8px)" }}
+                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, filter: "blur(6px)" }}
+                  transition={{ duration: 0.8 }}
+                >
+                  {narration}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Title-card slams */}
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <AnimatePresence>
+              {card && (
+                <motion.div
+                  key={card.key}
+                  className="text-center"
+                  initial={{ opacity: 0, scale: card.kind === "title" ? 1.6 : 1.25, letterSpacing: "0.4em" }}
+                  animate={{ opacity: 1, scale: 1, letterSpacing: card.kind === "title" ? "0.02em" : "0.12em" }}
+                  exit={{ opacity: 0, scale: 0.96, filter: "blur(6px)" }}
+                  transition={{ duration: card.kind === "title" ? 0.55 : 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {card.kind === "title" ? (
+                    <div className="font-display uppercase leading-none text-[16vw] md:text-[10vw] text-transparent bg-clip-text bg-gradient-to-b from-[#fff8ee] via-[#d9d3c7] to-[#7d776c] [filter:drop-shadow(0_0_30px_rgba(62,230,217,0.45))]">
+                      {card.text}
+                    </div>
+                  ) : (
+                    <div className="font-display uppercase text-5xl md:text-8xl text-paper [text-shadow:0_0_40px_rgba(255,107,53,0.6)]">{card.text}</div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Subtitles */}
           <div className="absolute inset-x-0 bottom-[calc(7vh+118px)] md:bottom-[calc(7vh+124px)] flex justify-center px-5">
@@ -243,7 +375,7 @@ export const CityWalk = () => {
             </AnimatePresence>
           </div>
 
-          {/* Controls appear once he has arrived */}
+          {/* Controls once he has arrived */}
           <AnimatePresence>
             {arrived && (
               <motion.div
@@ -262,8 +394,8 @@ export const CityWalk = () => {
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder={busy ? "Thinking…" : "Ask me anything…"}
-                    disabled={busy}
+                    placeholder={busy ? "Thinking…" : listening ? "Listening…" : "Ask me anything…"}
+                    disabled={busy || listening}
                     maxLength={500}
                     className="flex-1 bg-transparent outline-none text-paper text-sm md:text-base placeholder:text-paper/40 min-w-0"
                   />
@@ -271,11 +403,19 @@ export const CityWalk = () => {
                     <button
                       type="button"
                       onClick={listen}
-                      disabled={busy || listening}
-                      aria-label="Ask with your voice"
-                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${listening ? "bg-ember text-ink animate-pulse" : "text-paper/70 hover:text-paper hover:bg-paper/10"}`}
+                      disabled={busy}
+                      aria-label={listening ? "Stop listening" : "Ask with your voice"}
+                      className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                        listening ? "bg-ember text-ink" : "text-paper/70 hover:text-paper hover:bg-paper/10"
+                      }`}
                     >
-                      <Mic size={17} />
+                      {listening && (
+                        <span
+                          className="absolute inset-0 rounded-full border-2 border-ember"
+                          style={{ transform: `scale(${1 + micLevel * 0.9})`, opacity: 0.4 + micLevel * 0.6 }}
+                        />
+                      )}
+                      {listening ? <Square size={13} fill="currentColor" /> : <Mic size={17} />}
                     </button>
                   )}
                   <button
@@ -303,8 +443,21 @@ export const CityWalk = () => {
             )}
           </AnimatePresence>
 
-          {/* Sound + full chat + skip */}
-          <div className="absolute top-[14vh] md:top-[10vh] right-5 md:right-10 flex items-center gap-2 pointer-events-auto">
+          {/* Sound, text chat, skip */}
+          <div className="absolute top-[17vh] md:top-[13vh] right-5 md:right-10 flex items-center gap-2 pointer-events-auto">
+            {trailerRunning && (
+              <button
+                onClick={() => {
+                  stopSpeaking();
+                  setNarration("");
+                  setCard(null);
+                  setSkip((s) => s + 1);
+                }}
+                className="hud rounded-full px-3 py-2 border border-paper/25 text-paper/70 hover:text-paper"
+              >
+                Skip intro ⏭
+              </button>
+            )}
             <button
               onClick={toggleSound}
               className={`flex items-center gap-2 hud rounded-full px-3 py-2 border transition-colors ${

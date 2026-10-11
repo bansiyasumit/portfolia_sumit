@@ -66,9 +66,11 @@ const chunk = (sentences: string[], maxChars: number) => {
 
 let ctx: AudioContext | null = null;
 let analyser: AnalyserNode | null = null;
-let neuralAvailable = true; // flips off after the first failure so we stop trying
+// Turns off only when the server says the voice is unavailable (503) — a rate limit (429)
+// just means this one answer uses the browser voice.
+let neuralAvailable = true;
 
-const getContext = () => {
+export const getContext = () => {
   if (typeof window === "undefined") return null;
   if (!ctx) {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -110,7 +112,10 @@ const fetchAudio = async (text: string, signal?: AbortSignal): Promise<AudioBuff
 
 let currentSource: AudioBufferSourceNode | null = null;
 
-const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal) =>
+type Subtitles = { sentences: string[]; onSentence: (s: string) => void };
+
+/** Play audio through the analyser (for lip-sync); subtitles advance by each sentence's share of the text. */
+const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal, subs?: Subtitles, lipSync = true) =>
   new Promise<void>((resolve) => {
     const c = getContext()!;
     const src = c.createBufferSource();
@@ -119,21 +124,39 @@ const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal) =>
     currentSource = src;
     const data = new Uint8Array(analyser!.fftSize);
     let raf = 0;
+    const startAt = c.currentTime;
+
+    // Cumulative fraction of the text at which each sentence begins.
+    const total = subs ? subs.sentences.reduce((n, x) => n + x.length, 0) : 0;
+    const marks: number[] = [];
+    if (subs) {
+      let acc = 0;
+      for (const x of subs.sentences) {
+        marks.push(acc / total);
+        acc += x.length;
+      }
+      subs.onSentence(subs.sentences[0]);
+    }
+    let shown = 0;
 
     const meter = () => {
+      if (subs) {
+        const p = (c.currentTime - startAt) / buffer.duration;
+        while (shown + 1 < marks.length && p >= marks[shown + 1]) subs.onSentence(subs.sentences[++shown]);
+      }
       analyser!.getByteTimeDomainData(data);
       let sum = 0;
       for (let i = 0; i < data.length; i++) {
         const v = (data[i] - 128) / 128;
         sum += v * v;
       }
-      voiceState.level = Math.min(1, Math.sqrt(sum / data.length) * 5.5);
+      if (lipSync) voiceState.level = Math.min(1, Math.sqrt(sum / data.length) * 5.5);
       raf = requestAnimationFrame(meter);
     };
 
     const finish = () => {
       cancelAnimationFrame(raf);
-      voiceState.level = 0;
+      if (lipSync) voiceState.level = 0;
       if (currentSource === src) currentSource = null;
       resolve();
     };
@@ -147,7 +170,7 @@ const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal) =>
       },
       { once: true }
     );
-    voiceState.speaking = true;
+    if (lipSync) voiceState.speaking = true;
     meter();
     src.start();
   });
@@ -262,6 +285,8 @@ const silentSpeak = (sentence: string, signal?: AbortSignal) =>
 
 export type SpeakOptions = {
   muted: boolean;
+  /** narrator lines: play audio/subtitles without moving the persona's mouth */
+  narrator?: boolean;
   onSentence?: (sentence: string) => void;
   signal?: AbortSignal;
 };
@@ -281,8 +306,9 @@ export const speak = async (text: string, { muted, onSentence = () => {}, signal
       return;
     }
 
-    // Neural voice: fetch chunk N+1 while chunk N plays.
-    const neuralChunks = chunk(sentences, 220);
+    // Neural voice: usually one request per answer (fewer requests = no gaps and
+    // less free-tier quota); longer texts fetch chunk N+1 while chunk N plays.
+    const neuralChunks = chunk(sentences, 380);
     let next = neuralAvailable ? fetchAudio(neuralChunks[0], signal) : Promise.resolve(null);
     for (let i = 0; i < neuralChunks.length; i++) {
       const buffer = await next;
@@ -304,12 +330,40 @@ export const speak = async (text: string, { muted, onSentence = () => {}, signal
         return;
       }
       next = i + 1 < neuralChunks.length ? fetchAudio(neuralChunks[i + 1], signal) : Promise.resolve(null);
-      onSentence(neuralChunks[i]);
-      await playBuffer(buffer, signal);
+      await playBuffer(buffer, signal, { sentences: splitSentences(neuralChunks[i]), onSentence });
     }
   } finally {
     voiceState.speaking = false;
     voiceState.level = -1;
+  }
+};
+
+/** Play a pre-recorded line (public/voice/*.wav) with lip-sync and timed subtitles. */
+export const playClip = async (url: string, text: string, { muted, narrator = false, onSentence = () => {}, signal }: SpeakOptions) => {
+  if (!narrator) stopSpeaking();
+  const sentences = splitSentences(text);
+  const c = getContext();
+  if (muted || !c || c.state !== "running") {
+    for (const s of sentences) {
+      if (signal?.aborted) return;
+      onSentence(s);
+      if (narrator) await new Promise((r) => setTimeout(r, Math.max(1400, s.split(/\s+/).length * 330)));
+      else await silentSpeak(s, signal);
+    }
+    return;
+  }
+  try {
+    const res = await fetch(url, { signal });
+    const buffer = await c.decodeAudioData(await res.arrayBuffer());
+    if (signal?.aborted) return;
+    await playBuffer(buffer, signal, { sentences, onSentence }, !narrator);
+  } catch {
+    if (!signal?.aborted && !narrator) await speak(text, { muted, onSentence, signal });
+  } finally {
+    if (!narrator) {
+      voiceState.speaking = false;
+      voiceState.level = -1;
+    }
   }
 };
 
@@ -323,26 +377,84 @@ export const stopSpeaking = () => {
   voiceState.level = -1;
 };
 
-type Recognition = {
-  lang: string;
-  interimResults: boolean;
-  maxAlternatives: number;
-  start: () => void;
-  stop: () => void;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onend: (() => void) | null;
-  onerror: (() => void) | null;
+// ───────────────────────── Listening (Whisper via /api/stt) ─────────────────────────
+
+export const canRecord = () =>
+  typeof window !== "undefined" && !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== "undefined";
+
+/**
+ * Record one spoken question. Stops automatically ~1.2s after the visitor stops
+ * talking (simple voice-activity detection), after 15s, when aborted, or when
+ * stop() is called. Resolves with null if nothing was said.
+ */
+export const recordSpeech = ({ onLevel, signal }: { onLevel?: (level: number) => void; signal?: AbortSignal } = {}) => {
+  let stopFn = () => {};
+  const promise = (async (): Promise<Blob | null> => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    const c = getContext()!;
+    const source = c.createMediaStreamSource(stream);
+    const meter = c.createAnalyser();
+    meter.fftSize = 1024;
+    source.connect(meter);
+    const data = new Uint8Array(meter.fftSize);
+
+    const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
+    const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    const parts: Blob[] = [];
+    rec.ondataavailable = (e) => e.data.size && parts.push(e.data);
+
+    let heard = false;
+    let silenceSince = 0;
+    const started = performance.now();
+    let raf = 0;
+
+    return await new Promise<Blob | null>((resolve) => {
+      const finish = () => {
+        cancelAnimationFrame(raf);
+        if (rec.state !== "inactive") rec.stop();
+      };
+      stopFn = finish;
+      signal?.addEventListener("abort", finish, { once: true });
+
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        source.disconnect();
+        resolve(heard && parts.length ? new Blob(parts, { type: rec.mimeType || "audio/webm" }) : null);
+      };
+
+      const loop = () => {
+        meter.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        const level = Math.sqrt(sum / data.length);
+        onLevel?.(Math.min(1, level * 6));
+        const now = performance.now();
+        if (level > 0.035) {
+          heard = true;
+          silenceSince = 0;
+        } else if (heard) {
+          silenceSince ||= now;
+          if (now - silenceSince > 1200) return finish();
+        }
+        if (now - started > 15000 || (!heard && now - started > 7000)) return finish();
+        raf = requestAnimationFrame(loop);
+      };
+
+      rec.start(250);
+      loop();
+    });
+  })();
+  return { promise, stop: () => stopFn() };
 };
 
-export const createRecognizer = (): Recognition | null => {
-  if (typeof window === "undefined") return null;
-  const Ctor =
-    (window as unknown as { SpeechRecognition?: new () => Recognition }).SpeechRecognition ??
-    (window as unknown as { webkitSpeechRecognition?: new () => Recognition }).webkitSpeechRecognition;
-  if (!Ctor) return null;
-  const r = new Ctor();
-  r.lang = "en-IN";
-  r.interimResults = false;
-  r.maxAlternatives = 1;
-  return r;
+export const transcribe = async (audio: Blob): Promise<string> => {
+  const form = new FormData();
+  form.append("audio", audio, audio.type.includes("mp4") ? "speech.mp4" : "speech.webm");
+  const res = await fetch("/api/stt", { method: "POST", body: form });
+  if (!res.ok) throw new Error(res.status === 429 ? "rate-limited" : "stt-failed");
+  const data = await res.json();
+  return data.text ?? "";
 };

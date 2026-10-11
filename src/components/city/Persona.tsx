@@ -13,6 +13,14 @@ type PersonaState = {
   z: number;
   /** set by the director: 0 = standing, 1 = full walking speed */
   walkAmount: number;
+  /** hidden while he is still a comet in the sky */
+  visible: boolean;
+  /** 0..1 blend into the superhero landing crouch */
+  land: number;
+  /** 0..1 power-up: glowing eyes + energy aura */
+  glow: number;
+  /** 0..1 extra wind on the cape (falling, landing) */
+  wind: number;
 };
 
 /**
@@ -24,7 +32,31 @@ export const personaState: PersonaState = ((globalThis as { __sbPersona?: Person
   mode: "walk",
   z: -26,
   walkAmount: 1,
+  visible: true,
+  land: 0,
+  glow: 0,
+  wind: 0,
 });
+
+/** Superhero landing: right knee down, right fist on the ground, left arm swept back. */
+const LAND_POSE = {
+  hipsY: 0.47,
+  spineX: 0.55,
+  headX: -0.4,
+  thighL: -1.45,
+  kneeL: 1.55,
+  thighR: 0.25,
+  kneeR: 1.75,
+  shoulderRx: -0.45,
+  shoulderRz: -0.05,
+  elbowRx: 0,
+  shoulderLx: 0.95,
+  shoulderLz: 0.95,
+  elbowLx: -0.3,
+};
+
+const CAPE_W = 0.46;
+const CAPE_L = 1.05;
 
 // Palette taken from the profile photo.
 const C = {
@@ -64,7 +96,8 @@ export const Persona = () => {
       tee: mat(C.tee, { roughness: 0.95, emissive: "#2a2a2a" }),
       trousers: mat(C.trousers),
       shoes: mat(C.shoes, { roughness: 0.4, metalness: 0.2 }),
-      eye: mat(C.eye, { roughness: 0.2 }),
+      eye: mat(C.eye, { roughness: 0.2, emissive: "#3ee6d9", emissiveIntensity: 0 }),
+      cape: new THREE.MeshStandardMaterial({ color: "#8a2414", roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide, flatShading: true }),
       eyeWhite: mat("#efe9e2", { roughness: 0.4 }),
       lip: mat(C.lip),
       mouth: mat("#2a0f0b"),
@@ -92,6 +125,29 @@ export const Persona = () => {
     lids: useRef<THREE.Group>(null),
   };
 
+  const cape = useRef<THREE.Mesh>(null);
+  const capeGeom = useMemo(() => {
+    const g = new THREE.PlaneGeometry(CAPE_W, CAPE_L, 8, 14);
+    g.translate(0, -CAPE_L / 2, 0); // hang from the top edge
+    return g;
+  }, []);
+  const capeBase = useMemo(() => Float32Array.from(capeGeom.getAttribute("position").array as Float32Array), [capeGeom]);
+
+  const aura = useRef<THREE.Points>(null);
+  const auraGeom = useMemo(() => {
+    const n = 260;
+    const seeds = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      seeds[i * 3] = Math.random() * Math.PI * 2; // angle
+      seeds[i * 3 + 1] = Math.random(); // height phase
+      seeds[i * 3 + 2] = 0.35 + Math.random() * 0.35; // radius
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+    g.userData.seeds = seeds;
+    return g;
+  }, []);
+
   const phase = useRef(0);
   const mouthOpen = useRef(0);
   const blink = useRef({ next: 2, t: 0 });
@@ -108,7 +164,10 @@ export const Persona = () => {
     const p = phase.current;
     const s = Math.sin(p), c = Math.cos(p);
 
-    if (j.root.current) j.root.current.position.z = personaState.z;
+    if (j.root.current) {
+      j.root.current.position.z = personaState.z;
+      j.root.current.visible = personaState.visible;
+    }
 
     // ── Lower body: walk cycle blended with a relaxed stance
     if (j.hips.current) {
@@ -197,6 +256,63 @@ export const Persona = () => {
       j.head.current.rotation.z = lerp(j.head.current.rotation.z, mode === "think" ? 0.12 : w * c * 0.03, k);
     }
 
+    // ── Superhero landing: blend every joint toward the crouch
+    const L = personaState.land;
+    if (L > 0.001) {
+      const P = LAND_POSE;
+      const mix = (o: THREE.Object3D | null, axis: "x" | "z", v: number) => {
+        if (o) o.rotation[axis] = lerp(o.rotation[axis], v, L);
+      };
+      if (j.hips.current) {
+        j.hips.current.position.y = lerp(j.hips.current.position.y, P.hipsY, L);
+        j.hips.current.rotation.y = lerp(j.hips.current.rotation.y, 0, L);
+      }
+      mix(j.spine.current, "x", P.spineX);
+      mix(j.head.current, "x", P.headX);
+      mix(j.thighL.current, "x", P.thighL);
+      mix(j.kneeL.current, "x", P.kneeL);
+      mix(j.thighR.current, "x", P.thighR);
+      mix(j.kneeR.current, "x", P.kneeR);
+      mix(j.shoulderR.current, "x", P.shoulderRx);
+      mix(j.shoulderR.current, "z", P.shoulderRz);
+      mix(j.elbowR.current, "x", P.elbowRx);
+      mix(j.shoulderL.current, "x", P.shoulderLx);
+      mix(j.shoulderL.current, "z", P.shoulderLz);
+      mix(j.elbowL.current, "x", P.elbowLx);
+    }
+
+    // ── Power-up: glowing eyes and a rising energy aura
+    const G = personaState.glow;
+    m.eye.emissiveIntensity = G * 4;
+    if (aura.current) {
+      aura.current.visible = G > 0.01;
+      const pos = auraGeom.getAttribute("position") as THREE.BufferAttribute;
+      const seeds = auraGeom.userData.seeds as Float32Array;
+      for (let i = 0; i < pos.count; i++) {
+        const a = seeds[i * 3] + t * (1.2 + seeds[i * 3 + 2]);
+        const h = (seeds[i * 3 + 1] + t * 0.35) % 1;
+        const r = seeds[i * 3 + 2] * (1 - h * 0.5);
+        pos.setXYZ(i, Math.cos(a) * r, h * 2.1, Math.sin(a) * r);
+      }
+      pos.needsUpdate = true;
+      (aura.current.material as THREE.PointsMaterial).opacity = G * 0.85;
+    }
+
+    // ── Cape: hangs from the shoulders, ripples, flares with speed and wind
+    if (cape.current) {
+      const pos = capeGeom.getAttribute("position") as THREE.BufferAttribute;
+      const flare = 0.12 + w * 0.3 + personaState.wind * 0.9 + L * 0.25;
+      for (let i = 0; i < pos.count; i++) {
+        const x = capeBase[i * 3];
+        const y = capeBase[i * 3 + 1];
+        const v = -y / CAPE_L; // 0 at the shoulders, 1 at the hem
+        const ripple = Math.sin(t * 3.2 + v * 5 + x * 6) * 0.05 * v + Math.sin(t * 5.1 + v * 9) * 0.015 * v;
+        pos.setXYZ(i, x * (1 + v * 0.35), y + Math.pow(v, 2) * flare * 0.3, -Math.pow(v, 1.4) * flare - ripple);
+      }
+      pos.needsUpdate = true;
+      capeGeom.computeVertexNormals();
+    }
+
     // ── Lip-sync from the voice engine
     voiceState.wordPulse = Math.max(0, voiceState.wordPulse - d * 5);
     const talking = voiceState.speaking;
@@ -260,6 +376,9 @@ export const Persona = () => {
 
   return (
     <group ref={j.root}>
+      <points ref={aura} geometry={auraGeom} visible={false}>
+        <pointsMaterial color="#3ee6d9" size={0.035} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+      </points>
       <group ref={j.hips} position={[0, 0.95, 0]}>
         {/* pelvis */}
         <mesh material={m.trousers} position={[0, -0.02, 0]} scale={[1, 0.6, 0.8]}>
@@ -299,6 +418,7 @@ export const Persona = () => {
             </mesh>
             <Arm side={1} />
             <Arm side={-1} />
+            <mesh ref={cape} geometry={capeGeom} material={m.cape} position={[0, 0.02, -0.15]} />
 
             <group ref={j.neck} position={[0, 0.07, 0]}>
               <mesh material={m.skinShade} position={[0, 0.04, 0]}>

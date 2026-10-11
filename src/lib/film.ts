@@ -28,3 +28,20 @@ export const markFilmStarted = () => {
   (window as unknown as { __filmStarted?: boolean }).__filmStarted = true;
   window.dispatchEvent(new Event(FILM_START_EVENT));
 };
+
+const SOUND_KEY = "sb-sound";
+
+/** Whether the visitor chose "Enter with sound" this session. */
+export const soundPreferred = () => {
+  try {
+    return sessionStorage.getItem(SOUND_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+export const setSoundPreferred = (on: boolean) => {
+  try {
+    sessionStorage.setItem(SOUND_KEY, on ? "1" : "0");
+  } catch {}
+};

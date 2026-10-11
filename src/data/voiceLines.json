@@ -1,0 +1,8 @@
+{
+  "vo-world": { "voice": "daniel", "text": "In a world drowning in noise..." },
+  "vo-one": { "voice": "daniel", "text": "one researcher learned to turn it into signal." },
+  "greeting": {
+    "voice": "troy",
+    "text": "Hey, I'm Sumit. Welcome to my portfolio. I'm an AI researcher at NIT Jalandhar, building generative models for medical imaging. Ask me anything, or scroll down and watch the film."
+  }
+}

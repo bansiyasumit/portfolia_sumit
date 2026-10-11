@@ -52,7 +52,10 @@ export async function POST(req: Request) {
 
   if (!res.ok) {
     console.error("Groq TTS error:", res.status, (await res.text()).slice(0, 300));
-    return NextResponse.json({ error: "tts-unavailable" }, { status: 503 });
+    // 429 = free-tier limit hit (temporary); anything else = treat the voice as unavailable.
+    return res.status === 429
+      ? NextResponse.json({ error: "rate-limited" }, { status: 429 })
+      : NextResponse.json({ error: "tts-unavailable" }, { status: 503 });
   }
 
   const audio = await res.arrayBuffer();

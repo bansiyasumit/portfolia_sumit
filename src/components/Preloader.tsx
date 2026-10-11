@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { markFilmStarted } from "@/lib/film";
+import { markFilmStarted, setSoundPreferred } from "@/lib/film";
+import { unlockAudio } from "@/lib/voice";
+import { setSfxEnabled } from "@/lib/sfx";
 
 const SEEN_KEY = "sb-reel-seen";
 const COUNT = [3, 2, 1];
 const TICK_MS = 650;
 
 /**
- * Opening "film leader": a 3-2-1 countdown with a sweeping clock hand, then the
- * frame splits open like a shutter onto the hero. Plays once per session, can be
- * skipped by clicking, and is bypassed entirely for reduced-motion users.
+ * Opening "film leader": a 3-2-1 countdown with a sweeping clock hand, then a
+ * title card with an "Enter with sound" gate — that click is what lets the
+ * trailer audio and the persona's voice play. The frame then splits open like a
+ * shutter. Plays once per session; bypassed for reduced-motion users.
  */
 export const Preloader = () => {
   const [visible, setVisible] = useState(true);
@@ -35,11 +38,13 @@ export const Preloader = () => {
     const timers: ReturnType<typeof setTimeout>[] = [];
     COUNT.forEach((_, i) => timers.push(setTimeout(() => setStep(i), i * TICK_MS)));
     timers.push(setTimeout(() => setShowTitle(true), COUNT.length * TICK_MS));
-    timers.push(setTimeout(() => setVisible(false), COUNT.length * TICK_MS + 1100));
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const finish = () => {
+  const enter = (withSound: boolean) => {
+    setSoundPreferred(withSound);
+    setSfxEnabled(withSound);
+    if (withSound) unlockAudio();
     setVisible(false);
   };
 
@@ -57,12 +62,11 @@ export const Preloader = () => {
         <motion.div
           key="leader"
           data-preloader
-          className="fixed inset-0 z-[200] cursor-pointer select-none"
-          onClick={finish}
+          className="fixed inset-0 z-[200] select-none"
+          onClick={() => setShowTitle(true)}
           exit={{ opacity: 1 }}
           transition={{ duration: 1.1 }}
-          aria-label="Intro — click to skip"
-          role="button"
+          aria-label="Intro"
         >
           {/* Shutter halves: they slide apart on exit to reveal the page */}
           <motion.div
@@ -87,11 +91,12 @@ export const Preloader = () => {
             <div className="absolute left-0 right-0 top-1/2 h-px bg-paper/15" />
             <div className="absolute top-0 bottom-0 left-1/2 w-px bg-paper/15" />
 
-            <AnimatePresence mode="wait">
+            {/* Countdown and title cross-fade in place (no "wait" mode: a stalled exit must never block the Enter button). */}
+            <AnimatePresence>
               {!showTitle ? (
                 <motion.div
                   key={`n-${step}`}
-                  className="relative w-[min(60vw,320px)] aspect-square rounded-full border border-paper/30 flex items-center justify-center"
+                  className="absolute w-[min(60vw,320px)] aspect-square rounded-full border border-paper/30 flex items-center justify-center"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -115,7 +120,7 @@ export const Preloader = () => {
               ) : (
                 <motion.div
                   key="title"
-                  className="text-center px-6"
+                  className="absolute text-center px-6"
                   initial={{ opacity: 0, letterSpacing: "0.6em" }}
                   animate={{ opacity: 1, letterSpacing: "0.08em" }}
                   transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
@@ -124,13 +129,42 @@ export const Preloader = () => {
                   <div className="font-display text-5xl md:text-8xl uppercase text-paper">
                     Sumit Bansiya
                   </div>
+                  <motion.div
+                    className="mt-10 flex flex-col items-center gap-4"
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7, duration: 0.8 }}
+                  >
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        enter(true);
+                      }}
+                      data-cursor="PLAY"
+                      className="group inline-flex items-center gap-3 bg-ember text-ink pl-2 pr-6 py-2 rounded-full font-medium hover:bg-paper transition-colors"
+                      style={{ letterSpacing: "normal" }}
+                    >
+                      <span className="w-9 h-9 rounded-full bg-ink text-ember flex items-center justify-center text-xs">▶</span>
+                      Enter with sound
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        enter(false);
+                      }}
+                      className="hud text-paper/50 hover:text-paper transition-colors"
+                    >
+                      Enter silently
+                    </button>
+                    <span className="hud text-paper/30 mt-2">Headphones recommended</span>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             <div className="absolute bottom-8 left-0 right-0 flex justify-between px-6 md:px-10 hud text-muted">
               <span>SB_REEL // 2026</span>
-              <span>Click to skip</span>
+              <span>{showTitle ? "Rated AI for Awesome" : "Click to skip"}</span>
             </div>
           </motion.div>
         </motion.div>
