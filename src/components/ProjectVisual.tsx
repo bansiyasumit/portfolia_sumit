@@ -43,21 +43,21 @@ const ClassifierDiagram = () => {
           <motion.line
             x1={n.x} y1={n.y} x2={165} y2={90}
             stroke="#3ee6d9" strokeOpacity={0.25} strokeWidth={1}
-            variants={draw} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            variants={draw} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
           />
           <motion.circle
             cx={n.x} cy={n.y} r={4} fill="#3ee6d9" fillOpacity={0.7}
-            variants={fadeIn} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            variants={fadeIn} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
           />
         </g>
       ))}
 
       <motion.circle
         cx={165} cy={90} r={18} fill="#0a0a1a" stroke="#ff6b35" strokeWidth={1.5}
-        variants={fadeIn} custom={2} initial="hidden" whileInView="visible" viewport={{ once: true }}
+        variants={fadeIn} custom={2} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
       />
       <motion.text x={165} y={94} textAnchor="middle" fontSize="8" fill="#ff6b35" fontFamily="var(--nf-mono)"
-        variants={fadeIn} custom={3} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+        variants={fadeIn} custom={3} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}>
         CNN
       </motion.text>
 
@@ -66,9 +66,9 @@ const ClassifierDiagram = () => {
           <motion.line
             x1={183} y1={90} x2={280} y2={c.y}
             stroke={c.color} strokeOpacity={0.4} strokeWidth={1.5}
-            variants={draw} custom={i + 2} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            variants={draw} custom={i + 2} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
           />
-          <motion.g variants={fadeIn} custom={i + 4} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <motion.g variants={fadeIn} custom={i + 4} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}>
             <circle cx={288} cy={c.y} r={3} fill={c.color} />
             <text x={296} y={c.y + 3} fontSize="9" fill={c.color} fontFamily="var(--nf-mono)">
               {c.label}
@@ -95,10 +95,10 @@ const RagDiagram = () => {
       <motion.line
         x1={20} y1={70} x2={320} y2={70}
         stroke="#3ee6d9" strokeOpacity={0.2} strokeWidth={1}
-        variants={draw} initial="hidden" whileInView="visible" viewport={{ once: true }}
+        variants={draw} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
       />
       {stages.map((s, i) => (
-        <motion.g key={s.label} variants={fadeIn} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+        <motion.g key={s.label} variants={fadeIn} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}>
           <rect x={s.x - 24} y={55} width={48} height={30} rx={4} fill="#0a0a1a" stroke="#ff6b35" strokeOpacity={0.6} strokeWidth={1} />
           <text x={s.x} y={102} textAnchor="middle" fontSize="8" fill="#e0e0e0" fontFamily="var(--nf-mono)">
             {s.label}
@@ -131,18 +131,18 @@ const AgentsDiagram = () => {
           key={a.label}
           x1={165} y1={95} x2={a.x} y2={a.y}
           stroke={a.color} strokeOpacity={0.35} strokeWidth={1.2}
-          variants={draw} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }}
+          variants={draw} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
         />
       ))}
       <motion.circle
         cx={165} cy={95} r={20} fill="#0a0a1a" stroke="#f5c26b" strokeWidth={1.5}
-        variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true }}
+        variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
       />
       <text x={165} y={99} textAnchor="middle" fontSize="7.5" fill="#f5c26b" fontFamily="var(--nf-mono)">
         CREW
       </text>
       {agents.map((a, i) => (
-        <motion.g key={a.label} variants={fadeIn} custom={i + 1} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+        <motion.g key={a.label} variants={fadeIn} custom={i + 1} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}>
           <circle cx={a.x} cy={a.y} r={5} fill={a.color} />
           <text x={a.x} y={a.y - 10} textAnchor="middle" fontSize="8" fill="#e0e0e0" fontFamily="var(--nf-mono)">
             {a.label}
@@ -165,7 +165,7 @@ const VisionDiagram = () => {
   return (
     <svg viewBox="0 0 340 160" className="w-full h-full" fill="none">
       <motion.rect x={16} y={30} width={60} height={60} rx={3} fill="#0a0a1a" stroke="#3ee6d9" strokeWidth={1.5}
-        variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true }} />
+        variants={fadeIn} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }} />
       <text x={46} y={105} textAnchor="middle" fontSize="8" fill="#3ee6d9" fontFamily="var(--nf-mono)">INPUT</text>
 
       {layers.map((h, i) => {
@@ -175,7 +175,7 @@ const VisionDiagram = () => {
             key={i}
             x={x} y={60 - h / 2} width={22} height={h} rx={2}
             fill="#0a0a1a" stroke="#ff6b35" strokeOpacity={0.7} strokeWidth={1}
-            variants={fadeIn} custom={i + 1} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            variants={fadeIn} custom={i + 1} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
           />
         );
       })}
@@ -183,7 +183,7 @@ const VisionDiagram = () => {
 
       <g transform="translate(250, 0)">
         {bars.map((b, i) => (
-          <motion.g key={b.label} variants={fadeIn} custom={i + 5} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <motion.g key={b.label} variants={fadeIn} custom={i + 5} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}>
             <rect x={i * 26} y={90 - b.h} width={16} height={b.h} rx={2} fill={b.color} fillOpacity={0.6} />
             <text x={i * 26 + 8} y={104} textAnchor="middle" fontSize="6.5" fill="#e0e0e0" fontFamily="var(--nf-mono)">
               {b.label}

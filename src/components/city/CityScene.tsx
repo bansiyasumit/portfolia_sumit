@@ -47,12 +47,13 @@ type DirectorProps = {
   play: boolean;
   scroll: MotionValue<number>;
   skip: number;
+  replay: number;
   reduced: boolean;
   onBeat: (beat: string) => void;
 };
 
 /** Camera, lights and the whole trailer timeline — every value is a function of time. */
-const Director = ({ play, scroll, skip, reduced, onBeat }: DirectorProps) => {
+const Director = ({ play, scroll, skip, replay, reduced, onBeat }: DirectorProps) => {
   const { camera, size } = useThree();
   const started = useRef<number | null>(null);
   const fired = useRef(new Set<string>());
@@ -63,6 +64,7 @@ const Director = ({ play, scroll, skip, reduced, onBeat }: DirectorProps) => {
   const camTarget = useMemo(() => new THREE.Vector3(), []);
   const lookTarget = useMemo(() => new THREE.Vector3(), []);
   const lastSkip = useRef(skip);
+  const lastReplay = useRef(replay);
 
   useEffect(() => {
     Object.assign(personaState, { z: LAND_Z, visible: false, land: 1, glow: 0, wind: 0, walkAmount: 0, mode: "idle" });
@@ -78,6 +80,14 @@ const Director = ({ play, scroll, skip, reduced, onBeat }: DirectorProps) => {
       lastSkip.current = skip;
       started.current = Math.min(started.current, now - T_ARRIVE - 0.01);
       BEATS.forEach(([b]) => fired.current.add(b));
+    }
+    // "Replay trailer" restarts the whole timeline from the top.
+    if (replay !== lastReplay.current) {
+      lastReplay.current = replay;
+      started.current = now;
+      fired.current.clear();
+      personaState.mode = "idle";
+      camera.position.set(1.2, 0.5, 4);
     }
     const e = started.current === null ? 0 : now - started.current;
 
@@ -319,6 +329,7 @@ export default function CityScene({
   active,
   scroll,
   skip,
+  replay,
   reduced,
   onBeat,
 }: {
@@ -326,29 +337,37 @@ export default function CityScene({
   active: boolean;
   scroll: MotionValue<number>;
   skip: number;
+  replay: number;
   reduced: boolean;
   onBeat: (beat: string) => void;
 }) {
   const mobile = typeof window !== "undefined" && window.innerWidth < 768;
+  // Lite mode for phones and low-end laptops: skip post-processing, lower resolution.
+  const lite =
+    mobile ||
+    (typeof navigator !== "undefined" &&
+      ((navigator.hardwareConcurrency ?? 8) <= 4 || ((navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8) <= 4));
 
   return (
     <Canvas
       frameloop={active ? "always" : "never"}
-      dpr={mobile ? [1, 1.25] : [1, 1.6]}
+      dpr={lite ? [1, 1.2] : [1, 1.5]}
       camera={{ fov: 38, near: 0.05, far: 140 }}
       gl={{ antialias: false, powerPreference: "high-performance" }}
     >
       <color attach="background" args={["#05060a"]} />
       <fog attach="fog" args={["#07080d", 7, 52]} />
-      <City quality={mobile ? 0.5 : 1} />
+      <City quality={lite ? 0.5 : 1} />
       <Persona />
       <Comet />
       <ImpactFx />
-      <Director play={play} scroll={scroll} skip={skip} reduced={reduced} onBeat={onBeat} />
-      <EffectComposer multisampling={0}>
-        <Bloom intensity={1.25} luminanceThreshold={0.5} luminanceSmoothing={0.2} mipmapBlur />
-        <Vignette offset={0.25} darkness={0.78} />
-      </EffectComposer>
+      <Director play={play} scroll={scroll} skip={skip} replay={replay} reduced={reduced} onBeat={onBeat} />
+      {!lite && (
+        <EffectComposer multisampling={0}>
+          <Bloom intensity={1.25} luminanceThreshold={0.5} luminanceSmoothing={0.2} mipmapBlur />
+          <Vignette offset={0.25} darkness={0.78} />
+        </EffectComposer>
+      )}
     </Canvas>
   );
 }

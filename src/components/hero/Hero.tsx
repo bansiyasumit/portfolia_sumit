@@ -29,6 +29,9 @@ export const Hero = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const [filmStarted, setFilmStarted] = useState(false);
   const [inView, setInView] = useState(false);
+  // Mount the particle canvas only when the visitor is within ~half a screen of it, so it
+  // doesn't compete with the city scene on first load.
+  const [near, setNear] = useState(false);
   const [play, setPlay] = useState(false);
   const [particleCount, setParticleCount] = useState<number | null>(null);
   const achievement = profileData.achievements?.[0];
@@ -56,8 +59,13 @@ export const Hero = () => {
     const el = sectionRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { rootMargin: "100px" });
+    const nearObserver = new IntersectionObserver(([entry]) => entry.isIntersecting && setNear(true), { rootMargin: "40% 0px" });
+    nearObserver.observe(el);
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      nearObserver.disconnect();
+    };
   }, []);
 
   // The title card plays the first time the hero comes into view after the intro.
@@ -74,7 +82,7 @@ export const Hero = () => {
           <div className="absolute left-[-15%] bottom-[-20%] w-[50vw] h-[50vw] rounded-full bg-teal/10 blur-[140px]" />
         </div>
 
-        <PortraitParticles scatter={scatter} active={inView} onReady={setParticleCount} />
+        {near && <PortraitParticles scatter={scatter} active={inView} onReady={setParticleCount} />}
 
         {/* Letterbox bars close in as the scene ends */}
         <motion.div className="absolute top-0 inset-x-0 bg-ink z-20" style={{ height: barHeight }} />

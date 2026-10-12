@@ -55,7 +55,7 @@ export const PathSection = () => {
                     className={`pl-10 md:pl-0 ${right ? "md:col-start-2" : "md:text-right"}`}
                     initial={{ opacity: 0, x: right ? 40 : -40 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.4 }}
+                    viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
                     transition={{ duration: 0.9, ease }}
                   >
                     <div className="hud text-ember">
@@ -92,7 +92,7 @@ export const PathSection = () => {
                 className="group grid grid-cols-[3rem_1fr_auto] md:grid-cols-[5rem_1fr_16rem_4rem] items-center gap-4 py-5 border-b border-paper/10 hover:bg-paper/[0.03] transition-colors px-2"
                 initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.6 }}
+                viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
                 transition={{ duration: 0.6, delay: i * 0.04, ease }}
               >
                 <span className="hud text-paper/30 group-hover:text-ember transition-colors">{String(i + 1).padStart(3, "0")}</span>

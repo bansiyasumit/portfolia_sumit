@@ -26,7 +26,7 @@ export const SceneHeader = ({
       className="flex items-center gap-4 hud text-paper/50 mb-6"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
-      viewport={{ once: true, amount: 0.6 }}
+      viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
       transition={{ duration: 0.8 }}
     >
       <span className="text-ember">SC {String(number).padStart(2, "0")}</span>
@@ -34,7 +34,7 @@ export const SceneHeader = ({
         className="h-px flex-1 max-w-[180px] bg-paper/25 origin-left"
         initial={{ scaleX: 0 }}
         whileInView={{ scaleX: 1 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
         transition={{ duration: 1.2, ease }}
       />
       <span>{slug}</span>
@@ -46,7 +46,7 @@ export const SceneHeader = ({
       className="font-display uppercase leading-[0.88] text-[16vw] md:text-[9vw] xl:text-[8.5rem] tracking-tight"
       initial="hidden"
       whileInView="shown"
-      viewport={{ once: true, amount: 0.3 }}
+      viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
     >
       <span className="block overflow-hidden">
         <motion.span
@@ -65,7 +65,7 @@ export const SceneHeader = ({
         className="mt-6 max-w-2xl text-paper/60 text-base md:text-lg leading-relaxed"
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.6 }}
+        viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
         transition={{ duration: 0.9, delay: 0.2, ease }}
       >
         {intro}

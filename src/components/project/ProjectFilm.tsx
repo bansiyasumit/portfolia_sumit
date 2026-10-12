@@ -110,7 +110,7 @@ export const ProjectFilm = ({ project, index, total, next }: { project: Project;
                 className="bg-ink p-7 md:p-10"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
+                viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
                 transition={{ duration: 0.8, delay: i * 0.1, ease }}
               >
                 <div className="hud text-ember mb-4">{k}</div>
@@ -130,7 +130,7 @@ export const ProjectFilm = ({ project, index, total, next }: { project: Project;
                 className="relative"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
+                viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
                 transition={{ duration: 0.8, delay: i * 0.12, ease }}
               >
                 <div className="flex items-center gap-3 mb-5">
@@ -142,7 +142,7 @@ export const ProjectFilm = ({ project, index, total, next }: { project: Project;
                       className="hidden md:block h-px flex-1 bg-gradient-to-r from-ember/70 to-paper/10 origin-left"
                       initial={{ scaleX: 0 }}
                       whileInView={{ scaleX: 1 }}
-                      viewport={{ once: true }}
+                      viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
                       transition={{ duration: 1, delay: 0.3 + i * 0.12, ease }}
                     />
                   )}

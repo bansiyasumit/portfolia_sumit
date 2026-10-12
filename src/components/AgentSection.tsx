@@ -69,7 +69,7 @@ export const AgentSection = () => {
             className="lg:col-span-3 text-left relative rounded-sm border border-paper/15 bg-ink-2 overflow-hidden min-h-[320px] md:min-h-[380px] p-6 md:p-10 flex flex-col"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
+            viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           >
             <div
@@ -101,7 +101,7 @@ export const AgentSection = () => {
                 className="group text-left flex items-center justify-between gap-4 border border-paper/10 hover:border-ember/60 rounded-sm px-5 py-4 transition-colors"
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, amount: 0.6 }}
+                viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
                 transition={{ duration: 0.7, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
               >
                 <span className="text-paper/80 group-hover:text-paper text-sm md:text-base">{q}</span>

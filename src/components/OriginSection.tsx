@@ -19,7 +19,7 @@ const STATS = [
 
 const Counter = ({ value, decimals, suffix }: { value: number; decimals: number; suffix?: string }) => {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.8 });
+  const inView = useInView(ref, { once: true, margin: "0px 0px 12% 0px" });
   const [display, setDisplay] = useState((0).toFixed(decimals));
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export const OriginSection = () => {
                 className="mt-14 relative overflow-hidden rounded-sm border border-gold/30 bg-gradient-to-br from-gold/10 via-transparent to-transparent p-6 md:p-8"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
+                viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="hud text-gold mb-3">★ Award — official selection</div>

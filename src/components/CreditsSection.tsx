@@ -95,7 +95,7 @@ export const CreditsSection = () => {
         className="mt-28 md:mt-40 text-center select-none"
         initial={{ opacity: 0, letterSpacing: "0.5em" }}
         whileInView={{ opacity: 1, letterSpacing: "0em" }}
-        viewport={{ once: true, amount: 0.8 }}
+        viewport={{ once: true, amount: 0.01, margin: "0px 0px 12% 0px" }}
         transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="font-serif italic text-[22vw] md:text-[16vw] leading-[0.8] text-paper/90">Fin.</div>

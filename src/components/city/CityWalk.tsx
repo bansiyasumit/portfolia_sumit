@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUp, Mic, Square, Volume2, VolumeX } from "lucide-react";
 import { FILM_START_EVENT, OPEN_AGENT_EVENT, hasFilmStarted, setSoundPreferred, soundPreferred } from "@/lib/film";
-import { canRecord, playClip, recordSpeech, speak, stopSpeaking, transcribe, unlockAudio } from "@/lib/voice";
+import { canRecord, playClip, preloadClips, recordSpeech, speak, stopSpeaking, transcribe, unlockAudio } from "@/lib/voice";
 import { braam, hit, impact, riser, setSfxEnabled, whoosh } from "@/lib/sfx";
 import voiceLines from "@/data/voiceLines.json";
 import { personaState } from "./Persona";
@@ -39,6 +39,7 @@ export const CityWalk = () => {
   const [arrived, setArrived] = useState(false);
   const [reduced, setReduced] = useState(false);
   const [skip, setSkip] = useState(0);
+  const [replay, setReplay] = useState(0);
   const [muted, setMuted] = useState(true);
   const [narration, setNarration] = useState("");
   const [subtitle, setSubtitle] = useState("");
@@ -64,10 +65,18 @@ export const CityWalk = () => {
   useEffect(() => {
     setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     setCanListen(canRecord());
+    // Download the narrator + greeting audio early so they start exactly on cue.
+    preloadClips(["/voice/vo-world.wav", "/voice/vo-one.wav", "/voice/greeting.wav"]);
+    // Repeat visit in this session: he's already standing there (no 11s trailer on every reload).
+    let repeat = false;
+    try {
+      repeat = sessionStorage.getItem("sb-reel-seen") === "1";
+    } catch {}
     const start = () => {
       const withSound = soundPreferred();
       setMuted(!withSound);
       setSfxEnabled(withSound);
+      if (repeat) setSkip((x) => x + 1);
       setPlay(true);
     };
     if (hasFilmStarted()) start();
@@ -108,11 +117,11 @@ export const CityWalk = () => {
 
   const greet = useCallback(async () => {
     const ctrl = newSignal();
-    personaState.mode = "wave";
     let first = true;
     await playClip("/voice/greeting.wav", voiceLines.greeting.text, {
       muted: mutedRef.current,
       signal: ctrl.signal,
+      onStart: () => (personaState.mode = "wave"),
       onSentence: (s) => {
         setSubtitle(s);
         if (!first) personaState.mode = "talk";
@@ -129,8 +138,11 @@ export const CityWalk = () => {
 
   const narrate = (key: "vo-world" | "vo-one") => {
     const line = voiceLines[key];
-    setNarration(line.text);
-    playClip(`/voice/${key}.wav`, line.text, { muted: mutedRef.current, narrator: true }).then(() =>
+    playClip(`/voice/${key}.wav`, line.text, {
+      muted: mutedRef.current,
+      narrator: true,
+      onStart: () => setNarration(line.text), // text appears with the voice, not before it
+    }).then(() =>
       setTimeout(() => setNarration((n) => (n === line.text ? "" : n)), 500)
     );
   };
@@ -235,8 +247,13 @@ export const CityWalk = () => {
     history.current = [...history.current, { role: "agent" as const, content: reply }];
     setBusy(false);
     if (ctrl.signal.aborted) return;
-    personaState.mode = "talk";
-    await speak(reply, { muted: !soundOn, signal: ctrl.signal, onSentence: setSubtitle });
+    // He keeps his thinking pose until the voice is actually ready, then starts talking.
+    await speak(reply, {
+      muted: !soundOn,
+      signal: ctrl.signal,
+      onStart: () => (personaState.mode = "talk"),
+      onSentence: setSubtitle,
+    });
     finishTalking(ctrl);
     runActions(actions);
   };
@@ -283,7 +300,7 @@ export const CityWalk = () => {
     <section id="intro" ref={sectionRef} data-scene="Cold open" className="relative h-[190vh]">
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-ink">
         <div className="absolute inset-0">
-          <CityScene play={play} active={inView} scroll={scroll} skip={skip} reduced={reduced} onBeat={onBeat} />
+          <CityScene play={play} active={inView} scroll={scroll} skip={skip} replay={replay} reduced={reduced} onBeat={onBeat} />
         </div>
 
         {/* Impact flash */}
@@ -456,6 +473,22 @@ export const CityWalk = () => {
                 className="hud rounded-full px-3 py-2 border border-paper/25 text-paper/70 hover:text-paper"
               >
                 Skip intro ⏭
+              </button>
+            )}
+            {arrived && !busy && !listening && (
+              <button
+                onClick={() => {
+                  unlockAudio();
+                  abortRef.current?.abort();
+                  stopSpeaking();
+                  setSfxEnabled(!mutedRef.current);
+                  setSubtitle("");
+                  setArrived(false);
+                  setReplay((r) => r + 1);
+                }}
+                className="hud rounded-full px-3 py-2 border border-paper/25 text-paper/70 hover:text-paper"
+              >
+                ↺ Replay trailer
               </button>
             )}
             <button

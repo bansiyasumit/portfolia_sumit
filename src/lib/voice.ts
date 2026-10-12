@@ -115,7 +115,7 @@ let currentSource: AudioBufferSourceNode | null = null;
 type Subtitles = { sentences: string[]; onSentence: (s: string) => void };
 
 /** Play audio through the analyser (for lip-sync); subtitles advance by each sentence's share of the text. */
-const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal, subs?: Subtitles, lipSync = true) =>
+const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal, subs?: Subtitles, lipSync = true, onStart?: () => void) =>
   new Promise<void>((resolve) => {
     const c = getContext()!;
     const src = c.createBufferSource();
@@ -135,7 +135,6 @@ const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal, subs?: Subtitles,
         marks.push(acc / total);
         acc += x.length;
       }
-      subs.onSentence(subs.sentences[0]);
     }
     let shown = 0;
 
@@ -171,6 +170,9 @@ const playBuffer = (buffer: AudioBuffer, signal?: AbortSignal, subs?: Subtitles,
       { once: true }
     );
     if (lipSync) voiceState.speaking = true;
+    // Text and gestures are released at the exact moment sound starts.
+    onStart?.();
+    subs?.onSentence(subs.sentences[0]);
     meter();
     src.start();
   });
@@ -213,7 +215,7 @@ if (typeof window !== "undefined" && canSpeak()) {
 }
 
 /** Speak one chunk with the browser voice; switches subtitles at sentence boundaries. */
-const browserSpeak = (text: string, sentences: string[], onSentence: (s: string) => void, signal?: AbortSignal) =>
+const browserSpeak = (text: string, sentences: string[], onSentence: (s: string) => void, signal?: AbortSignal, onStart?: () => void) =>
   new Promise<void>((resolve) => {
     const u = new SpeechSynthesisUtterance(text);
     const voice = pickVoice();
@@ -232,7 +234,6 @@ const browserSpeak = (text: string, sentences: string[], onSentence: (s: string)
       offset = starts[starts.length - 1] + s.length;
     }
     let shown = 0;
-    onSentence(sentences[0]);
 
     // Chrome's network voices stop after ~15s unless nudged.
     const keepAlive = setInterval(() => {
@@ -242,7 +243,11 @@ const browserSpeak = (text: string, sentences: string[], onSentence: (s: string)
       }
     }, 10000);
 
-    u.onstart = () => (voiceState.speaking = true);
+    u.onstart = () => {
+      voiceState.speaking = true;
+      onStart?.();
+      onSentence(sentences[0]);
+    };
     u.onboundary = (e) => {
       voiceState.wordPulse = 1;
       for (let i = starts.length - 1; i > shown; i--) {
@@ -285,19 +290,29 @@ const silentSpeak = (sentence: string, signal?: AbortSignal) =>
 
 export type SpeakOptions = {
   muted: boolean;
+  /** called once, when the voice actually starts (after any download / synthesis delay) */
+  onStart?: () => void;
   /** narrator lines: play audio/subtitles without moving the persona's mouth */
   narrator?: boolean;
   onSentence?: (sentence: string) => void;
   signal?: AbortSignal;
 };
 
-export const speak = async (text: string, { muted, onSentence = () => {}, signal }: SpeakOptions) => {
+export const speak = async (text: string, { muted, onStart, onSentence = () => {}, signal }: SpeakOptions) => {
+  let started = false;
+  const startOnce = () => {
+    if (!started) {
+      started = true;
+      onStart?.();
+    }
+  };
   stopSpeaking();
   const sentences = splitSentences(stripMarkdown(text));
   if (!sentences.length) return;
 
   try {
     if (muted) {
+      startOnce();
       for (const s of sentences) {
         if (signal?.aborted) break;
         onSentence(s);
@@ -319,9 +334,10 @@ export const speak = async (text: string, { muted, onSentence = () => {}, signal
         if (canSpeak()) {
           for (const c of chunk(splitSentences(rest), 240)) {
             if (signal?.aborted) return;
-            await browserSpeak(c, splitSentences(c), onSentence, signal);
+            await browserSpeak(c, splitSentences(c), onSentence, signal, startOnce);
           }
         } else {
+          startOnce();
           for (const s of splitSentences(rest)) {
             onSentence(s);
             await silentSpeak(s, signal);
@@ -330,7 +346,7 @@ export const speak = async (text: string, { muted, onSentence = () => {}, signal
         return;
       }
       next = i + 1 < neuralChunks.length ? fetchAudio(neuralChunks[i + 1], signal) : Promise.resolve(null);
-      await playBuffer(buffer, signal, { sentences: splitSentences(neuralChunks[i]), onSentence });
+      await playBuffer(buffer, signal, { sentences: splitSentences(neuralChunks[i]), onSentence }, true, startOnce);
     }
   } finally {
     voiceState.speaking = false;
@@ -339,11 +355,21 @@ export const speak = async (text: string, { muted, onSentence = () => {}, signal
 };
 
 /** Play a pre-recorded line (public/voice/*.wav) with lip-sync and timed subtitles. */
-export const playClip = async (url: string, text: string, { muted, narrator = false, onSentence = () => {}, signal }: SpeakOptions) => {
+// Pre-recorded clips are downloaded once, ahead of time, so they start instantly.
+const clipCache = new Map<string, Promise<ArrayBuffer>>();
+
+export const preloadClips = (urls: string[]) => {
+  for (const url of urls) {
+    if (!clipCache.has(url)) clipCache.set(url, fetch(url).then((r) => r.arrayBuffer()));
+  }
+};
+
+export const playClip = async (url: string, text: string, { muted, narrator = false, onStart, onSentence = () => {}, signal }: SpeakOptions) => {
   if (!narrator) stopSpeaking();
   const sentences = splitSentences(text);
   const c = getContext();
   if (muted || !c || c.state !== "running") {
+    onStart?.();
     for (const s of sentences) {
       if (signal?.aborted) return;
       onSentence(s);
@@ -353,12 +379,15 @@ export const playClip = async (url: string, text: string, { muted, narrator = fa
     return;
   }
   try {
-    const res = await fetch(url, { signal });
-    const buffer = await c.decodeAudioData(await res.arrayBuffer());
+    preloadClips([url]);
+    // decodeAudioData detaches its input, so decode a copy of the cached bytes.
+    const bytes = (await clipCache.get(url)!).slice(0);
+    const buffer = await c.decodeAudioData(bytes);
     if (signal?.aborted) return;
-    await playBuffer(buffer, signal, { sentences, onSentence }, !narrator);
+    await playBuffer(buffer, signal, { sentences, onSentence }, !narrator, onStart);
   } catch {
-    if (!signal?.aborted && !narrator) await speak(text, { muted, onSentence, signal });
+    clipCache.delete(url);
+    if (!signal?.aborted && !narrator) await speak(text, { muted, onStart, onSentence, signal });
   } finally {
     if (!narrator) {
       voiceState.speaking = false;
