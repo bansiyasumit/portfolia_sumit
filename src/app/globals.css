@@ -205,3 +205,19 @@ html.reel-seen [data-preloader] { display: none; }
 .anim-letterbox { height: 7vh; animation: letterbox-open 1.4s cubic-bezier(0.76, 0, 0.24, 1) both; }
 .anim-rise { animation: rise-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .anim-fade-up { animation: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Recruiter mode prints as a clean document */
+@media print {
+  nav,
+  [data-preloader],
+  .film-grain,
+  .vignette,
+  [aria-label="Open Agent Sumit"],
+  [role="dialog"] {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+}

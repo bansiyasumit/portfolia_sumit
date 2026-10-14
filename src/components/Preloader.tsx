@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { markFilmStarted, setSoundPreferred } from "@/lib/film";
+import { isRecruiterPath, markFilmStarted, setSoundPreferred } from "@/lib/film";
 import { unlockAudio } from "@/lib/voice";
 import { setSfxEnabled } from "@/lib/sfx";
 
@@ -17,6 +18,7 @@ const TICK_MS = 650;
  * shutter. Plays once per session; bypassed for reduced-motion users.
  */
 export const Preloader = () => {
+  const recruiter = isRecruiterPath(usePathname());
   const [visible, setVisible] = useState(true);
   const [step, setStep] = useState(0);
   const [showTitle, setShowTitle] = useState(false);
@@ -28,7 +30,7 @@ export const Preloader = () => {
     } catch {}
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (seen || reduced) {
+    if (seen || reduced || recruiter) {
       setVisible(false);
       markFilmStarted();
       return;
@@ -47,6 +49,8 @@ export const Preloader = () => {
     if (withSound) unlockAudio();
     setVisible(false);
   };
+
+  if (recruiter) return null;
 
   return (
     <AnimatePresence
@@ -157,6 +161,9 @@ export const Preloader = () => {
                       Enter silently
                     </button>
                     <span className="hud text-paper/30 mt-2">Headphones recommended</span>
+                    <a href="/recruiter" onClick={(e) => e.stopPropagation()} className="text-sm text-paper/60 hover:text-ember underline underline-offset-4" style={{ letterSpacing: "normal" }}>
+                      In a hurry? Recruiter mode →
+                    </a>
                   </motion.div>
                 </motion.div>
               )}

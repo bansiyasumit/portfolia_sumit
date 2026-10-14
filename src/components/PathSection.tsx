@@ -37,7 +37,7 @@ export const PathSection = () => {
   return (
     <section id="path" data-scene="The Path" className="relative py-28 md:py-40">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
-        <SceneHeader number={4} slug="Montage — 2020 to now" title="The Path" />
+        <SceneHeader number={5} slug="Montage — 2020 to now" title="The Path" />
 
         <div ref={lineRef} className="relative">
           {/* The spine draws itself as you scroll */}

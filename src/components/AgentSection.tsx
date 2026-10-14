@@ -54,7 +54,7 @@ export const AgentSection = () => {
     <section id="agent" data-scene="Agent" className="relative py-28 md:py-40">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
         <SceneHeader
-          number={5}
+          number={6}
           slug="Int. Interrogation room — live"
           title="Interview"
           accent="my AI twin"

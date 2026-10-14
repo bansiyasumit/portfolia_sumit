@@ -11,9 +11,9 @@ import Lenis from "lenis";
 export const SmoothScroll = () => {
   useEffect(() => {
     // A reload replays the film from the top, instead of landing mid-page while the
-    // 3D scenes are still starting up.
+    // 3D scenes are still starting up. Deep links (/#work etc.) are left alone.
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-    window.scrollTo(0, 0);
+    if (!window.location.hash) window.scrollTo(0, 0);
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 

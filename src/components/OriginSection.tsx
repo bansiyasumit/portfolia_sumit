@@ -71,7 +71,7 @@ export const OriginSection = () => {
   return (
     <section id="origin" data-scene="Origin" className="relative py-28 md:py-40 overflow-x-clip">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
-        <SceneHeader number={2} slug="Int. Village to lab — dawn" title="Origin" accent="story" />
+        <SceneHeader number={3} slug="Int. Village to lab — dawn" title="Origin" accent="story" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Film frame portrait */}

@@ -190,7 +190,7 @@ export const WorkReel = () => {
     <section id="work" data-scene="The Work" className="relative pt-28 md:pt-40">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
         <SceneHeader
-          number={3}
+          number={4}
           slug="Int. Research lab — night"
           title="The Work"
           intro="Five systems, from synthetic mammograms to agent crews. Each one began as noise and a question."

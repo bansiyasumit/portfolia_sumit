@@ -45,3 +45,6 @@ export const setSoundPreferred = (on: boolean) => {
     sessionStorage.setItem(SOUND_KEY, on ? "1" : "0");
   } catch {}
 };
+
+/** The plain, fast "Recruiter mode" page: no intro, grain, custom cursor or 3D. */
+export const isRecruiterPath = (pathname: string | null) => !!pathname && pathname.startsWith("/recruiter");

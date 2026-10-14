@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { OPEN_AGENT_EVENT, SCENES } from "@/lib/film";
+import { OPEN_AGENT_EVENT, SCENES, isRecruiterPath } from "@/lib/film";
 
 const LINKS = SCENES.filter((s) => s.id !== "home");
 
@@ -12,7 +12,9 @@ export const Navigation = () => {
   const [solid, setSolid] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   // On project pages the section anchors live on the home page.
-  const base = usePathname() === "/" ? "" : "/";
+  const pathname = usePathname();
+  const base = pathname === "/" ? "" : "/";
+  const recruiter = isRecruiterPath(pathname);
 
   useEffect(() => {
     let last = window.scrollY;
@@ -36,7 +38,7 @@ export const Navigation = () => {
         animate={{ y: hidden && !menuOpen ? "-110%" : "0%" }}
         transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
         className={`fixed top-0 inset-x-0 z-[120] transition-colors duration-500 ${
-          solid && !menuOpen ? "bg-ink/70 backdrop-blur-md border-b border-paper/5" : "bg-transparent"
+          (solid || recruiter) && !menuOpen ? "bg-ink/90 backdrop-blur-md border-b border-paper/5" : "bg-transparent"
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-5 md:px-10 h-16 md:h-20 flex items-center justify-between">
@@ -58,6 +60,12 @@ export const Navigation = () => {
                 {link.label}
               </a>
             ))}
+            <a
+              href={recruiter ? "/" : "/recruiter"}
+              className="hidden lg:inline hud text-paper/60 hover:text-ember border border-paper/20 rounded-full px-3 py-2 transition-colors"
+            >
+              {recruiter ? "▶ Cinematic mode" : "Recruiter mode"}
+            </a>
             <button
               onClick={() => window.dispatchEvent(new Event(OPEN_AGENT_EVENT))}
               className="hud text-ink bg-paper hover:bg-ember px-4 py-2.5 rounded-full transition-colors"
@@ -105,12 +113,19 @@ export const Navigation = () => {
                 </motion.a>
               </div>
             ))}
+            <a
+              href={recruiter ? "/" : "/recruiter"}
+              onClick={() => setMenuOpen(false)}
+              className="mt-8 self-start hud text-paper/70 border border-paper/25 rounded-full px-5 py-3"
+            >
+              {recruiter ? "▶ Cinematic mode" : "Recruiter mode — one page"}
+            </a>
             <button
               onClick={() => {
                 setMenuOpen(false);
                 window.dispatchEvent(new Event(OPEN_AGENT_EVENT));
               }}
-              className="mt-10 self-start hud text-ink bg-ember px-5 py-3 rounded-full"
+              className="mt-4 self-start hud text-ink bg-ember px-5 py-3 rounded-full"
             >
               Ask my AI
             </button>

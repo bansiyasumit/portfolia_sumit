@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import profileData from "@/data/profile.json";
 import { SceneHeader } from "./SceneHeader";
+import { PostCredits } from "./credits/PostCredits";
 
 const CREDITS: [string, string[]][] = [
   ["Directed by", ["Sumit Bansiya"]],
@@ -27,7 +28,7 @@ export const CreditsSection = () => {
   return (
     <section id="credits" data-scene="Credits" className="relative pt-28 md:pt-40 pb-20 overflow-x-clip">
       <div className="max-w-[1400px] mx-auto px-5 md:px-10">
-        <SceneHeader number={6} slug="Fade in — the sequel" title="Let's make" accent="the sequel." />
+        <SceneHeader number={7} slug="Fade in — the sequel" title="Let's make" accent="the sequel." />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
@@ -105,6 +106,8 @@ export const CreditsSection = () => {
         <span>© 2026 Sumit Bansiya — all rights reserved</span>
         <span>No GPUs were harmed in the making of this film</span>
       </footer>
+      <p className="text-center hud text-paper/25 mt-10">Stay for the post-credits scene…</p>
+      <PostCredits />
     </section>
   );
 };

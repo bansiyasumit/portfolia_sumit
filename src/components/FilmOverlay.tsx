@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { toTimecode } from "@/lib/film";
+import { isRecruiterPath, toTimecode } from "@/lib/film";
 
 /** Total "runtime" the page maps onto, so the timecode reads like a real reel. */
 const RUNTIME_SECONDS = 4 * 60 + 12;
@@ -49,6 +49,8 @@ export const FilmOverlay = () => {
       observer.disconnect();
     };
   }, [pathname]);
+
+  if (isRecruiterPath(pathname)) return null;
 
   return (
     <>

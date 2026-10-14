@@ -1,5 +1,6 @@
 import { CityWalk } from "@/components/city/CityWalk";
 import { Hero } from "@/components/hero/Hero";
+import { MirrorSection } from "@/components/mirror/MirrorSection";
 import { OriginSection } from "@/components/OriginSection";
 import { WorkReel } from "@/components/WorkReel";
 import { PathSection } from "@/components/PathSection";
@@ -11,6 +12,7 @@ export default function Home() {
     <>
       <CityWalk />
       <Hero />
+      <MirrorSection />
       <OriginSection />
       <WorkReel />
       <PathSection />

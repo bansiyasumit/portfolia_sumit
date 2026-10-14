@@ -1,8 +1,18 @@
 {
-  "vo-world": { "voice": "daniel", "text": "In a world drowning in noise..." },
-  "vo-one": { "voice": "daniel", "text": "one researcher learned to turn it into signal." },
+  "vo-world": {
+    "voice": "daniel",
+    "text": "In a world drowning in noise..."
+  },
+  "vo-one": {
+    "voice": "daniel",
+    "text": "one researcher learned to turn it into signal."
+  },
   "greeting": {
     "voice": "troy",
     "text": "Hey, I'm Sumit. Welcome to my portfolio. I'm an AI researcher at NIT Jalandhar, building generative models for medical imaging. Ask me anything, or scroll down and watch the film."
+  },
+  "post-credits": {
+    "voice": "troy",
+    "text": "You stayed after the credits? Respect. Now send me an email, and let's make the sequel together."
   }
 }

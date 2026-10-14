@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { isRecruiterPath } from "@/lib/film";
 
 /**
  * Viewfinder cursor: a dot that tracks the pointer exactly and a focus ring that
@@ -8,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
  * expands the ring and shows a label. Only enabled for fine pointers.
  */
 export const FilmCursor = () => {
+  const recruiter = isRecruiterPath(usePathname());
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
@@ -15,7 +18,10 @@ export const FilmCursor = () => {
   const [active, setActive] = useState(false);
 
   useEffect(() => {
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (recruiter || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      setEnabled(false);
+      return;
+    }
     setEnabled(true);
     document.body.classList.add("has-film-cursor");
 
@@ -46,9 +52,9 @@ export const FilmCursor = () => {
       window.removeEventListener("pointermove", move);
       document.body.classList.remove("has-film-cursor");
     };
-  }, []);
+  }, [recruiter]);
 
-  if (!enabled) return null;
+  if (!enabled || recruiter) return null;
 
   const size = label ? 84 : active ? 48 : 30;
 
